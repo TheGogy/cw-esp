@@ -5,27 +5,24 @@ from PyQt5.QtGui import QFontMetrics
 class SubtitleWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
         # Set window properties
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setWindowFlag(2) # allows resizing
-        self.setWindowFlag(Qt.WindowStaysOnTopHint) # window to always be on top
-        self.setGeometry(300, 100, 1000, 100)  # (x,y,width,height)
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
+        self.setGeometry(300, 100, 1000, 100)
         self.setMouseTracking(True)
-        
-        
-        # variable for clicking
+        # variable for clicking / translucent mode 
         self.dragging = False
         self.oldPosition = None
         self.translucentMode = True
-        # set up fonts
+        # set label which contains the subtitlese
         self.label = QLabel(self)
-        self.label.setText("Your subtitle text")
+        self.label.setText("")
         self.label.setStyleSheet("font-size: 40px; color: Pink;")
         self.label.setGeometry(0, 0, self.width(), self.height())
 
-    #Button events 
+    #MouseEvents implement window movement without having to have a window with a frame 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton: 
             self.dragging = True
@@ -50,13 +47,13 @@ class SubtitleWindow(QMainWindow):
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
         #transpancy
-        transparency = QAction("",self)
-        transparency.triggered.connect(self.switchTransparencyMode)
+        translucent = QAction("",self)
+        translucent.triggered.connect(self.switchTransparencyMode)
         if self.translucentMode:
-            transparency.setText("Enter Transparency Mode")
+            translucent.setText("Enable Translucent Background")
         else:
-            transparency.setText("Exit Transparency Mode")
-        contextMenu.addAction(transparency)
+            translucent.setText("Disable Translucent Background")
+        contextMenu.addAction(translucent)
         #quit
         quit = QAction("Quit")
         contextMenu.addAction(quit)
@@ -68,12 +65,13 @@ class SubtitleWindow(QMainWindow):
         self.translucentMode = not self.translucentMode
         self.setAttribute(Qt.WA_TranslucentBackground,self.translucentMode)
         self.update()
-             
+        
+    # if window is resized ensures that the label will stay the same size
     def resizeEvent(self, event):
         self.label.setGeometry(0,0,self.width(),self.height())
+        self.update()
         
-   
-
+    # updates subtitles requires updating to accomdate multiple lines of text
     def setSubtitleText(self, text):
         text = self.label.text() +" " + text
         size = QFontMetrics(self.label.font())

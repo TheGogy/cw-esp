@@ -54,7 +54,6 @@ class MicrophoneThread(QThread):
                     data = q.get()
                     if recognizer.AcceptWaveform(data):
                         recognizerResult = recognizer.Result()
-                        # convert the recognizerResult string into a dictionary
                         resultDict = json.loads(recognizerResult)
                         if not resultDict.get("text", "") == "":
                             print(resultDict["text"])
