@@ -1,11 +1,14 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QLabel, QMenu, QAction, QWidget, QMainWindow
+from PyQt5.QtWidgets import QApplication, QLabel, QMenu, QAction, QMainWindow
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFontMetrics
+
+
 class SubtitleWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         # Set window properties
+        
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setWindowFlag(2) # allows resizing
@@ -18,7 +21,7 @@ class SubtitleWindow(QMainWindow):
         self.translucentMode = True
         # set label which contains the subtitlese
         self.label = QLabel(self)
-        self.label.setText("")
+        self.label.setText("[Subtitles]")
         self.label.setStyleSheet("font-size: 40px; color: Pink;")
         self.label.setGeometry(0, 0, self.width(), self.height())
 
@@ -42,7 +45,9 @@ class SubtitleWindow(QMainWindow):
             self.oldPosition = None
 
     def resizeEvent(self, event):
-        return super().resizeEvent(event)
+        super().resizeEvent(event)
+        self.label.setGeometry(0, 0, self.width(), self.height())
+        self.update()
     
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
@@ -73,7 +78,10 @@ class SubtitleWindow(QMainWindow):
         
     # updates subtitles requires updating to accomdate multiple lines of text
     def setSubtitleText(self, text):
-        text = self.label.text() +" " + text
+        if self.label.text() == "[Subtitles]":
+            pass
+        else:
+            text = self.label.text() + " " + text
         size = QFontMetrics(self.label.font())
         text_split = text.split(" ")
         while size.width(text) > self.width() and len(text_split) > 1:
@@ -82,7 +90,9 @@ class SubtitleWindow(QMainWindow):
             text = " ".join(text_split)
         self.label.setText(text)
         self.update()
-    
+
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = SubtitleWindow()

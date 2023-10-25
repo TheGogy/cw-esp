@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import os
 import queue
 import sounddevice as sd
 from vosk import Model, KaldiRecognizer
@@ -7,7 +7,7 @@ import sys
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread
 import json
-import os
+from pathlib import Path
 import SubtitleWindow
 '''This script processes audio input from the microphone and displays the transcribed text.'''
 
@@ -39,7 +39,7 @@ class MicrophoneThread(QThread):
 
         # build the model and recognizer objects.
         print("===> Build the model and recognizer objects.  This will take a few minutes.")
-        modelPath = os.getcwd() + "/models/vosk-model-small-en-us-0.15"
+        modelPath = os.getcwd() +  "/models/vosk-model-small-en-us-0.15"
         model = Model(modelPath)
         recognizer = KaldiRecognizer(model, samplerate)
         recognizer.SetWords(False)
