@@ -1,5 +1,5 @@
 sounddevice==0.4.6
-vosk==0.3.45
+vosk==0.3.44
 srt==3.5.3
 pyyaml==6.0.1
 PyQt5==5.15.10
