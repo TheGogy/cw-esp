@@ -1,0 +1,4 @@
+Current: currentUser
+DefaultPath: Default path for users to be saved to no functionally save anywhere else at the moment
+Users:
+  user: path to css
