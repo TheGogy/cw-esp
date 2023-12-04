@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread
 import json
 import SubtitleWindow
-import Profiles
 from pathlib import Path
 '''This script processes audio input from the microphone and displays the transcribed text.'''
 
