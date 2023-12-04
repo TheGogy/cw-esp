@@ -68,3 +68,8 @@ class Profiles:
         with open(str(Path(__file__).resolve().parent) + "/Profiles.yml", 'w') as file:
             yaml.dump(userProfiles, file)
     
+    def getUserSettings(userProfiles, user = None):
+        if user is None:
+            user = userProfiles['Current']
+        with open(userProfiles['Users'][user],"r") as cssFile:
+            return "".join(cssFile.readlines())

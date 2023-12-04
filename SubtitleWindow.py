@@ -9,7 +9,9 @@ class SubtitleWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         #recieves userProfiles if unsuccessful then quits the application
+        
         self.profiles = Profiles.getUserProfiles()
+        
         if self.profiles['Current'] is None:
             self.userSelector = SettingsWindow(self.profiles)
             self.userSelector.exec_()
@@ -17,8 +19,7 @@ class SubtitleWindow(QMainWindow):
         if self.profiles['Current'] is None:
             sys.exit()
         else:
-            with open(self.profiles['Users'][self.profiles['Current']],"r") as userFile: #Opens Current User File I know its cursed plz somebody fix
-                self.css = userFile.read()
+            self.css = Profiles.getUserSettings(self.profiles)
         # Set window properties
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -104,8 +105,7 @@ class SubtitleWindow(QMainWindow):
         if self.profiles['Current'] is None:
             sys.exit()
         else:
-            with open(self.profiles['Users'][self.profiles['Current']],"r") as userFile: #Opens Current User File I know its cursed plz somebody fix
-                self.css = userFile.read()
+            self.css = Profiles.getUserSettings(self.profiles)
         self.label.setText("[Subtitles]")
         self.label.setStyleSheet(self.css)
         self.show()
@@ -132,8 +132,6 @@ class SubtitleWindow(QMainWindow):
             text = " ".join(text_split)
         self.label.setText(text)
         self.update()
-    
-
     
 
 

@@ -82,6 +82,8 @@ class SettingsWindow(QDialog):
             self.userProfiles['Current'] = self.DropDownMenu.currentText()
             self.resetCurrentUserSettings()
 
+        
+
     ################ Deals with font colour ################ 
 
     def initFontrgba(self):
@@ -135,7 +137,6 @@ class SettingsWindow(QDialog):
     def fontSelectorDictionary(self):
         if self.fontSelector.text() in QFontDatabase().families():
             self.currentUserSettings['font-family'] = self.fontSelector.text()
-        self.saveQuitOff()
     
     ################ Font Size Selector ################
     
@@ -149,7 +150,6 @@ class SettingsWindow(QDialog):
 
     def fontSizeSelectorDictionary(self):
         self.currentUserSettings['font-size'] = self.fontSizeSelector.text() + "px"
-        self.saveQuitOff()
 
     ################ Deals with buttons ################
 
@@ -172,6 +172,12 @@ class SettingsWindow(QDialog):
             if self.userProfiles['Current'] is None:
                 self.userProfiles['Users'][self.DropDownMenu.currentText()] = self.userProfiles['DefaultPath'] + "/" + self.DropDownMenu.currentText() + ".css"
                 self.userProfiles['Current'] = self.DropDownMenu.currentText()
+            else:
+                oldText = self.userProfiles['Current']
+                path = self.userProfiles['Users'][oldText]
+                del self.userProfiles['Users'][oldText]
+                self.userProfiles['Current'] = self.DropDownMenu.currentText()
+                self.userProfiles['Users'][self.userProfiles['Current']] = path
             Profiles.saveUserProfile(self.userProfiles, self.currentUserSettings)
             self.fillDropDownMenu()
         if self.saveQuit:
@@ -179,12 +185,14 @@ class SettingsWindow(QDialog):
         else:
             self.saveButton.setText("Save and Exit")
             self.saveQuit = True
-
+    
     def saveQuitOff(self):
+        '''Disables the save and quit for use whenever anything else is clicked'''
         self.saveQuit = False
         self.saveButton.setText("Save")
     
     def validProfile(self):
+        '''Checks validity of the Profile so that it doesnt save a no functioning file'''
         if self.currentUserSettings['font-size'] is None:
             return False
         elif self.currentUserSettings['font-family'] is None:
@@ -192,16 +200,19 @@ class SettingsWindow(QDialog):
         return True
     
     def deleteUser(self):
-        os.remove(self.userProfiles['Users'][self.userProfiles['Current']])
-        del self.userProfiles['Users'][self.userProfiles['Current']]
-        self.userProfiles['Current'] = None
-        Profiles.saveProfilesFile(self.userProfiles)
-        self.resetCurrentUserSettings()
-        self.fillDropDownMenu()
+        '''If there is a user to delete it deletes updating the file system accordingly'''
+        if self.userProfiles['Current'] is not None:
+            os.remove(self.userProfiles['Users'][self.userProfiles['Current']])
+            del self.userProfiles['Users'][self.userProfiles['Current']]
+            self.userProfiles['Current'] = None
+            Profiles.saveProfilesFile(self.userProfiles)
+            self.resetCurrentUserSettings()
+            self.fillDropDownMenu()
 
     ################ Utitily Functions ################
 
     def resetCurrentUserSettings(self):
+        '''Sets the values of the sliders to the current user settings'''
         self.currentUserSettings = Profiles.getUserSettingDictionary(self.userProfiles)
         if self.currentUserSettings['font-size'] != None:
             self.fontSizeSelector.setText(self.currentUserSettings['font-size'][:-2])
@@ -220,6 +231,7 @@ class SettingsWindow(QDialog):
         self.fontOpacitySlider.setValue(int(float(rgbaSplit[3]) * 100))
 
     def generateSlider(self,min: int, max: int):
+        '''Generates a slider (to avoid code duplicaions)'''
         slider = QSlider()
         slider.setOrientation(1)
         slider.setRange(min,max)
@@ -235,13 +247,16 @@ class SettingsWindow(QDialog):
         super().resizeEvent(event)
 
     def eventFilter(self, source, event):
+        '''Enables editing of the name of a already made profile'''
         if event.type() == event.MouseButtonDblClick and source is self.DropDownMenu:
             self.DropDownMenu.setEditable(True)
             if self.DropDownMenu.currentText() == "Create New User":
                 self.DropDownMenu.setCurrentText("")
         return super().eventFilter(source, event)
+    
     def mousePressEvent(self, event):
         self.saveQuitOff()
+        
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = SettingsWindow(Profiles.getUserProfiles())
