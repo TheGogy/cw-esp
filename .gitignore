@@ -1,4 +1,6 @@
-venv/
+.venv/
 models/*model*
 __pycache__
 test.py
+Profiles.yml
+Users/*
