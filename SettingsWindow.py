@@ -5,6 +5,7 @@ from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator
 import sys
 import os
+import re
 from Profiles import Profiles
 
 
@@ -13,14 +14,13 @@ class Communicate(QObject):
 
 class SettingsWindow(QDialog):
 
-    def __init__(self,userProfiles):
+    def __init__(self):
         super().__init__()
         self.setGeometry(100,100,400,200)
         self.setWindowTitle("User Selection")
-        self.userProfiles = userProfiles
-        self.currentUserSettings = Profiles.getUserSettingDictionary(self.userProfiles)
+        self.currentUserSettings = Profiles.getCurrentUserSettings()
         self.initLayout()
-        self.resetCurrentUserSettings()
+        self.resetUserSettings()
         self.communicate = Communicate()
         
     ################ Initialization ################
@@ -32,96 +32,88 @@ class SettingsWindow(QDialog):
         self.initFontrgba()
         self.initFontSelector()
         self.initFontSizeSelector()
-        self.buttonInit()
-        
-        
+        self.buttonInit()      
 
     ################ Drop down menu ################
-
+ 
     def initUserDropdownMenu(self):
+        '''Creates the user DropDownMenu, adds it to form layout and connects it to the required functions'''
         self.DropDownMenu = QComboBox()
         self.fillDropDownMenu()
-        self.DropDownMenu.activated.connect(self.activedDropDownMenu)
-        self.DropDownMenu.currentIndexChanged.connect(self.changedUser)
+        if Profiles.getCurrentUser() is not None:
+            self.DropDownMenu.setCurrentText(Profiles.getCurrentUser())
+        self.DropDownMenu.activated.connect(self.changedUser)
         self.layout.addWidget(self.DropDownMenu)
         self.DropDownMenu.installEventFilter(self) 
         
     def fillDropDownMenu(self):
+        '''Populates the DropDownMenu'''
         self.DropDownMenu.clear()
-        users =  self.userProfiles['Users'].keys()
-        if self.userProfiles['Current'] is not None:
-            self.DropDownMenu.addItem(self.userProfiles['Current'])
-            users = list(self.userProfiles['Users'].keys())
-            users.remove(self.userProfiles['Current'])
+        users = sorted(Profiles.getUserList())
         for user in users:
             self.DropDownMenu.addItem(user)
         self.DropDownMenu.addItem("Create New User")
-        self.DropDownMenu.setEditable(False)
-        if self.DropDownMenu.count() == 1:
-            self.DropDownMenu.setEditable(True)
-            self.DropDownMenu.setCurrentText("")
-        if self.DropDownMenu.count() > 1:
-            self.userProfiles['Current'] = self.DropDownMenu.itemText(0)
+        self.DropDownMenu.setEditable(True)
+        if Profiles.getCurrentUser() is not None:
+            self.DropDownMenu.setCurrentText(Profiles.getCurrentUser())
+        self.updateText()
 
-    def activedDropDownMenu(self):
-        if self.DropDownMenu.currentIndex() + 1 == self.DropDownMenu.count():
-            self.DropDownMenu.setEditable(True)
-            self.DropDownMenu.setCurrentText("")
-            self.resetCurrentUserSettings()
-                        
     def changedUser(self):
-        if self.DropDownMenu.count() == 0:
-            return
+        '''Updates entire settings menu if user is changed'''
+        self.updateText()
+        self.resetUserSettings()
+ 
+    def updateText(self):
+        '''if create new user is selected enter editable mode'''
         self.DropDownMenu.setEditable(False)
         if self.DropDownMenu.currentText() == "Create New User":
-            self.userProfiles['Current'] = None
             self.DropDownMenu.setEditable(True)
             self.DropDownMenu.setCurrentText("")
-            self.resetCurrentUserSettings()
-        else:
-            self.userProfiles['Current'] = self.DropDownMenu.currentText()
-            self.resetCurrentUserSettings()
-
-        
-
+         
     ################ Deals with font colour ################ 
 
     def initFontrgba(self):
+        '''Initializes font rgba sliders'''
          #adding fontrgba slider
         fontrgbSlidersBox = QHBoxLayout()
-        self.fontrgbSliders  = {} #(r,g,b) sliders
-        self.fontrgbIndicators = {}
-        for colour in ("red","green","blue"):
-            slider, indicator = self.generateSlider(0,255)
-            slider.valueChanged.connect(self.updateSliderIndicators)
-            self.fontrgbSliders[colour] = slider
-            self.fontrgbIndicators[colour] = indicator
-            fontrgbSlidersBox.addWidget(indicator,6)
-            fontrgbSlidersBox.addWidget(slider,10)
+        self.fontRedSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
+        fontrgbSlidersBox.addLayout(self.fontRedSliderBox)
+        self.fontGreenSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
+        fontrgbSlidersBox.addLayout(self.fontGreenSliderBox)
+        self.fontBlueSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
+        fontrgbSlidersBox.addLayout(self.fontBlueSliderBox)
         self.layout.addRow("Colour:",fontrgbSlidersBox)
         #adding font opacity slider
-        self.fontOpacitySlider, self.fontOpacityIndicator = self.generateSlider(0,100)
-        self.fontOpacityIndicator.setText(str(self.fontOpacitySlider.value() /100))
-        opacityLayout = QHBoxLayout()
-        opacityLayout.addWidget(self.fontOpacitySlider)
-        opacityLayout.addWidget(self.fontOpacityIndicator)
-        self.layout.addRow("Font Opacity: ",opacityLayout)
-        self.fontOpacitySlider.valueChanged.connect(self.updateSliderIndicators)
-        self.currentUserSettings['color'] = "rgba(0,0,0,0)"
+        self.fontOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)
+        self.layout.addRow("Font Opacity: ",self.fontOpacityBox)
     
     def updateSliderIndicators(self):
-        self.fontOpacityIndicator.setText(str(self.fontOpacitySlider.value() /100))
-        for colour in self.fontrgbIndicators.keys():
-            self.fontrgbIndicators[colour].setText(str(self.fontrgbSliders[colour].value()))
-        self.fontrgbaDictionary()
+        '''Updates the slider indicator and dictionary when a slider is moved'''
+        r = self.fontRedSliderBox.itemAt(1).widget().value()
+        g = self.fontGreenSliderBox.itemAt(1).widget().value()
+        b = self.fontBlueSliderBox.itemAt(1).widget().value()
+        a = self.fontOpacityBox.itemAt(1).widget().value() / 100
+        self.fontrgbaDictionary(f"rgba({r},{g},{b},{a})")
+        self.setFontRgbaSliders(f"rgba({r},{g},{b},{a})")
         self.saveQuitOff()
 
-    def fontrgbaDictionary(self):
-        rgba  =  "rgba(" + str(self.fontrgbSliders["red"].value())
-        rgba += "," + str(self.fontrgbSliders["green"].value()) 
-        rgba += "," + str(self.fontrgbSliders["blue"].value()) 
-        rgba += "," + str(self.fontOpacitySlider.value() /100) + ")"
-        self.currentUserSettings['color']  = rgba
+    def fontrgbaDictionary(self,value: str):
+        '''Updates dictionary'''
+        self.currentUserSettings['color']  = value
+        self.saveQuitOff()
+
+    def setFontRgbaSliders(self,value: str):
+        '''sets fonts and and indicator to a given rgba value'''
+        rgbaValues = re.findall(r'\d+[.]?\d*',self.currentUserSettings['color'])
+        self.fontRedSliderBox.itemAt(1).widget().setValue(int(rgbaValues[0]))
+        self.fontRedSliderBox.itemAt(0).widget().setText(rgbaValues[0])
+        self.fontGreenSliderBox.itemAt(1).widget().setValue(int(rgbaValues[1]))
+        self.fontGreenSliderBox.itemAt(0).widget().setText(rgbaValues[1])
+        self.fontBlueSliderBox.itemAt(1).widget().setValue(int(rgbaValues[2]))
+        self.fontBlueSliderBox.itemAt(0).widget().setText(rgbaValues[2])
+        self.fontOpacityBox.itemAt(1).widget().setValue(int(float(rgbaValues[3]) * 100))
+        self.fontOpacityBox.itemAt(0).widget().setText(rgbaValues[3])
+
 
     ################ Font Selector ################
 
@@ -137,6 +129,7 @@ class SettingsWindow(QDialog):
     def fontSelectorDictionary(self):
         if self.fontSelector.text() in QFontDatabase().families():
             self.currentUserSettings['font-family'] = self.fontSelector.text()
+        self.saveQuitOff()
     
     ################ Font Size Selector ################
     
@@ -150,6 +143,7 @@ class SettingsWindow(QDialog):
 
     def fontSizeSelectorDictionary(self):
         self.currentUserSettings['font-size'] = self.fontSizeSelector.text() + "px"
+        self.saveQuitOff()
 
     ################ Deals with buttons ################
 
@@ -160,32 +154,25 @@ class SettingsWindow(QDialog):
         self.deleteUserButton.clicked.connect(self.deleteUser)
         self.saveButton.clicked.connect(self.saveButtonFunction)
         buttonLayout  = QHBoxLayout()
-        buttonLayout.setGeometry(self.layout.geometry())
         buttonLayout.addWidget(self.deleteUserButton,2)
         buttonLayout.addStretch(6)
         buttonLayout.addWidget(self.saveButton,2)
         self.layout.addRow(buttonLayout)
         self.saveQuit = False
 
-    def saveButtonFunction(self):
+    def saveButtonFunction(self): #Bug: if repeatly clicked fast it break as it is unable the first run finish breaking the logic 
+        '''Save the updated information when called'''
         if self.validProfile():
-            if self.userProfiles['Current'] is None:
-                self.userProfiles['Users'][self.DropDownMenu.currentText()] = self.userProfiles['DefaultPath'] + "/" + self.DropDownMenu.currentText() + ".css"
-                self.userProfiles['Current'] = self.DropDownMenu.currentText()
-            else:
-                oldText = self.userProfiles['Current']
-                path = self.userProfiles['Users'][oldText]
-                del self.userProfiles['Users'][oldText]
-                self.userProfiles['Current'] = self.DropDownMenu.currentText()
-                self.userProfiles['Users'][self.userProfiles['Current']] = path
-            Profiles.saveUserProfile(self.userProfiles, self.currentUserSettings)
+            if self.getEditedUsername() != self.getOriginalUsername():
+                Profiles.deleteUser(self.getOriginalUsername())
+            Profiles.saveUserProfile(self.getEditedUsername(), self.currentUserSettings)
             self.fillDropDownMenu()
-        if self.saveQuit:
+        if self.saveQuit: 
             self.close()
         else:
             self.saveButton.setText("Save and Exit")
             self.saveQuit = True
-    
+     
     def saveQuitOff(self):
         '''Disables the save and quit for use whenever anything else is clicked'''
         self.saveQuit = False
@@ -195,50 +182,55 @@ class SettingsWindow(QDialog):
         '''Checks validity of the Profile so that it doesnt save a no functioning file'''
         if self.currentUserSettings['font-size'] is None:
             return False
-        elif self.currentUserSettings['font-family'] is None:
+        if self.currentUserSettings['font-family'] is None:
             return False
         return True
     
     def deleteUser(self):
-        '''If there is a user to delete it deletes updating the file system accordingly'''
-        if self.userProfiles['Current'] is not None:
-            os.remove(self.userProfiles['Users'][self.userProfiles['Current']])
-            del self.userProfiles['Users'][self.userProfiles['Current']]
-            self.userProfiles['Current'] = None
-            Profiles.saveProfilesFile(self.userProfiles)
-            self.resetCurrentUserSettings()
-            self.fillDropDownMenu()
+        '''If there is a user to delete it deletes updating the file system accordingly''' 
+        Profiles.deleteUser(self.getOriginalUsername())
+        self.fillDropDownMenu()
+        self.resetUserSettings()
+
 
     ################ Utitily Functions ################
+    
+    def getEditedUsername(self):
+        return self.DropDownMenu.currentText()
 
-    def resetCurrentUserSettings(self):
+    def getOriginalUsername(self):
+        if self.DropDownMenu.itemText(self.DropDownMenu.currentIndex()) != "Create New User":
+            return self.DropDownMenu.itemText(self.DropDownMenu.currentIndex())
+        else:
+            return None
+    
+    def resetUserSettings(self):
         '''Sets the values of the sliders to the current user settings'''
-        self.currentUserSettings = Profiles.getUserSettingDictionary(self.userProfiles)
+        self.currentUserSettings = Profiles.getUserSettings(self.getOriginalUsername())
         if self.currentUserSettings['font-size'] != None:
-            self.fontSizeSelector.setText(self.currentUserSettings['font-size'][:-2])
+            self.fontSizeSelector.setText(re.search(r'\d+[.]?\d*',self.currentUserSettings['font-size']).group())
         else:
             self.fontSizeSelector.setText("")
         if self.currentUserSettings['font-family'] != None:
             self.fontSelector.setText(self.currentUserSettings['font-family'])
         else:
             self.fontSelector.setText("")
-        rgbaSplit = (self.currentUserSettings['color'][5:-1]).split(",")
-        rgbaDict = {}
-        for index, colour in enumerate(("red","green","blue")):
-            rgbaDict[colour] = rgbaSplit[index]
-        for colour in ("red","green","blue"):    
-            self.fontrgbSliders[colour].setValue(int(rgbaDict[colour]))
-        self.fontOpacitySlider.setValue(int(float(rgbaSplit[3]) * 100))
+        self.setFontRgbaSliders(self.currentUserSettings['color'])
 
-    def generateSlider(self,min: int, max: int):
+
+    def generateSliderBox(self,min: int, max: int,function):
         '''Generates a slider (to avoid code duplicaions)'''
+        sliderBox = QHBoxLayout()
         slider = QSlider()
         slider.setOrientation(1)
         slider.setRange(min,max)
         indicator = QLabel()
+        indicator.setFixedSize(25,20)
         indicator.setText(str(slider.value()))
-        return slider, indicator
-
+        sliderBox.addWidget(indicator)
+        sliderBox.addWidget(slider)
+        slider.valueChanged.connect(function)
+        return sliderBox
     
     
     ################ Window Wide Events ################
@@ -250,8 +242,6 @@ class SettingsWindow(QDialog):
         '''Enables editing of the name of a already made profile'''
         if event.type() == event.MouseButtonDblClick and source is self.DropDownMenu:
             self.DropDownMenu.setEditable(True)
-            if self.DropDownMenu.currentText() == "Create New User":
-                self.DropDownMenu.setCurrentText("")
         return super().eventFilter(source, event)
     
     def mousePressEvent(self, event):
@@ -259,6 +249,6 @@ class SettingsWindow(QDialog):
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = SettingsWindow(Profiles.getUserProfiles())
+    window = SettingsWindow()
     window.show()
     sys.exit(app.exec_())

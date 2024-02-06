@@ -6,7 +6,7 @@ import sys
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread
 import json
-import SubtitleWindow
+from SubtitleWindow import SubtitleWindow
 from pathlib import Path
 '''This script processes audio input from the microphone and displays the transcribed text.'''
 
@@ -14,7 +14,7 @@ from pathlib import Path
 class MicrophoneThread(QThread):
     def __init__(self):
         super().__init__()
-        self.window = SubtitleWindow.SubtitleWindow()
+        self.window = SubtitleWindow()
         self.window.show()
     def run(self):
         

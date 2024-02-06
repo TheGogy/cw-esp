@@ -9,17 +9,11 @@ class SubtitleWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         #recieves userProfiles if unsuccessful then quits the application
-        
-        self.profiles = Profiles.getUserProfiles()
-        
-        if self.profiles['Current'] is None:
-            self.userSelector = SettingsWindow(self.profiles)
-            self.userSelector.exec_()
-        self.profiles = Profiles.getUserProfiles()
-        if self.profiles['Current'] is None:
-            sys.exit()
+        currentUser = Profiles.getCurrentUser()
+        if currentUser is None:
+            self.openSettingsMenu()
         else:
-            self.css = Profiles.getUserSettings(self.profiles)
+            self.css = Profiles.getCurrentUserCSS()
         # Set window properties
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -95,17 +89,12 @@ class SubtitleWindow(QMainWindow):
     
     def openSettingsMenu(self):
         self.hide()
-        self.profiles = Profiles.getUserProfiles()
-        self.userSelector = SettingsWindow(self.profiles)
+        self.userSelector = SettingsWindow()
         self.userSelector.exec_()
-        if self.profiles['Current'] is None:
-            self.userSelector = SettingsWindow(self.profiles)
-            self.userSelector.exec_()
-        self.profiles = Profiles.getUserProfiles()
-        if self.profiles['Current'] is None:
+        if Profiles.getCurrentUser() is None:
             sys.exit()
         else:
-            self.css = Profiles.getUserSettings(self.profiles)
+            self.css = Profiles.getCurrentUserCSS()
         self.label.setText("[Subtitles]")
         self.label.setStyleSheet(self.css)
         self.show()
@@ -117,7 +106,7 @@ class SubtitleWindow(QMainWindow):
         
     def setSubtitleText(self, text):
         '''
-        updates subtitles ensure they do not run of the screen\n
+        updates subtitles to ensure they do not run of the screen\n
         needs updating to accomdate multiple lines of text
         '''
         if self.label.text() == "[Subtitles]":
