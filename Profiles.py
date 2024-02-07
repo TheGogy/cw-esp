@@ -2,41 +2,52 @@ from pathlib import Path
 import yaml
 import os
 class Profiles:
-    def saveUserProfile(userProfiles,currentUserSettings):
-        if userProfiles['Current'] is None:
-            raise TypeError("There must be a current user Current user is None")
-        userFilePath = userProfiles['Users'][userProfiles['Current']]
-        css_string = "QLabel {\n"
-        for element in currentUserSettings.keys():
-            css_string += element + ": " + currentUserSettings[element] + ";\n"
-        css_string += "}"
-        with open(userFilePath, 'w') as userFile:
-            userFile.write(css_string)
-        Profiles.saveProfilesFile(userProfiles)
-        
+    ################ Database Queries ################
 
-    ''' Profiles.yml
-    Current: currentUsername
-    Users: dictionary key = username, value = path/to/user
-    DefaultPath: default path new users will be saved to
-    '''
-    def generateProfilesFile():
-        data = {
-        'Current': None,
-        'Users': {},
-        'DefaultPath': None,
-        }
-        profilesPath = str(Path(__file__).resolve().parent) + "/Profiles.yml"
-        defaultPath = str(Path(__file__).resolve().parent) + "/Users"
-        if not os.path.exists(defaultPath):
-            os.mkdir(defaultPath)
-        data['DefaultPath'] = defaultPath
-        with open(profilesPath, 'w') as file:
-            yaml.dump(data, file, default_flow_style=False)
+    ###PUBLIC###
+
+    def getCurrentUserCSS():
+        with open(Profiles.getUserPath(Profiles.getCurrentUser()), "r") as file:
+            return "".join(file.readlines())
+        
+    def getUserList():
+        return list(Profiles.getUserProfiles()['Users'])
+
+    def getCurrentUser():
+        return Profiles.getUserProfiles()['Current']
+
+    def getCurrentUserSettings():
+        return Profiles.getUserSettings(Profiles.getCurrentUser())
+
+    def userExists(user = None):
+        if user in Profiles.getUserList():
+            return True
+        else:
+            return False
+
+    def getUserSettings(user = None):
+        userProfiles = Profiles.getUserProfiles()
+        if not Profiles.userExists(user):
+            userSettings = Profiles.generateDefaultSettings()
+        else:
+            userSettings = {}
+            with open(Profiles.getUserPath(user),"r") as cssFile:
+                cssLines = cssFile.readlines()[1:-1]
+                for line in cssLines:
+                    entry = (line.strip()).split(": ")
+                    userSettings[entry[0]] = entry[1][:-1]
+        return userSettings
+
+    ###PRIVATE###
+
+    def getUserPath(user = None):
+        defaultProfilePath = Profiles.getUserProfiles()["DefaultPath"] 
+        return f"{defaultProfilePath}/{user}.css"
 
     def getUserProfiles():
-        profilesPath = Path(str(Path(__file__).resolve().parent) + "/Profiles.yml")
-        if not profilesPath.exists():
+        appDirectory =  Path(str(Path(__file__).resolve().parent))
+        profilesPath = f"{appDirectory}/Profiles.yml"
+        if not Path(profilesPath).exists():
             Profiles.generateProfilesFile()
         try:
             with open(profilesPath, "r") as profilesFile:
@@ -46,30 +57,70 @@ class Profiles:
         with open(profilesPath, "r") as profilesFile:
                 profiles = yaml.safe_load(profilesFile)
         return profiles
+
+    ################ Data Editor  ################
     
-    def getUserSettingDictionary(userProfiles,user = None):
-        if user is None:
-            user = userProfiles['Current']
-        if user is None or user not in userProfiles['Users']:
-            userSettings = {}
-            userSettings['color'] = "rgba(0,0,0,0)"
-            userSettings['font-family'] = None
-            userSettings['font-size'] = None
-        else:
-            userSettings = {}
-            with open(userProfiles['Users'][user],"r") as cssFile:
-                cssLines = cssFile.readlines()[1:-1]
-                for line in cssLines:
-                    entry = (line.strip()).split(": ")
-                    userSettings[entry[0]] = entry[1][:-1]
+    ###PUBLIC###
+
+    def generateDefaultSettings():
+        userSettings = {}
+        userSettings['color'] = "rgba(255,255,255,1)"
+        userSettings['font-family'] = None
+        userSettings['font-size'] = None
         return userSettings
-    
+
+    def saveUserProfile(user: str,currentUserSettings: dict):
+        userProfilePath = Profiles.getUserPath(user)
+        css_string = "QLabel {\n"
+        for element in currentUserSettings.keys():
+            css_string += f"{element}: {currentUserSettings[element]};\n"
+        css_string += "}"
+        with open(userProfilePath, 'w') as userFile:
+            userFile.write(css_string)
+        if not Profiles.userExists(user):
+            Profiles.addUser(user)
+        Profiles.setCurrentUser(user)
+
+    def deleteUser(user: str):
+        userProfiles = Profiles.getUserProfiles()
+        if Profiles.userExists(user):
+            os.remove(Profiles.getUserPath(user))
+            userProfiles['Users'].remove(user)
+            userProfiles['Current'] = None
+            Profiles.saveProfilesFile(userProfiles)
+
+
+    ''' Profiles.yml
+    Current: currentUsername
+    Users: set of current users
+    DefaultPath: default path new users will be saved to
+    '''
+    def generateProfilesFile():
+        appDirectory = str(Path(__file__).resolve().parent) 
+        data = {
+            'Current': None,
+            'Users': set(),
+            'DefaultPath': None,
+        }
+        profilesPath = f"{appDirectory}/Profiles.yml"
+        defaultPath =  f"{appDirectory}/Users"
+        if not os.path.exists(defaultPath):
+            os.mkdir(defaultPath)
+        data['DefaultPath'] = defaultPath
+        with open(profilesPath, 'w') as file:
+            yaml.dump(data, file, default_flow_style=False)
+
     def saveProfilesFile(userProfiles):
-        with open(str(Path(__file__).resolve().parent) + "/Profiles.yml", 'w') as file:
+        appDirectory = str(Path(__file__).resolve().parent)
+        with open(f"{appDirectory}/Profiles.yml", 'w') as file:
             yaml.dump(userProfiles, file)
     
-    def getUserSettings(userProfiles, user = None):
-        if user is None:
-            user = userProfiles['Current']
-        with open(userProfiles['Users'][user],"r") as cssFile:
-            return "".join(cssFile.readlines())
+    def addUser(user):
+        userProfiles = Profiles.getUserProfiles()
+        userProfiles['Users'].add(user)
+        Profiles.saveProfilesFile(userProfiles)
+
+    def setCurrentUser(user):
+        userProfiles = Profiles.getUserProfiles()
+        userProfiles['Current'] = user
+        Profiles.saveProfilesFile(userProfiles)
