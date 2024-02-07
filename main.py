@@ -17,18 +17,12 @@ class MicrophoneThread(QThread):
         self.window = SubtitleWindow.SubtitleWindow()
         self.window.show()
     def run(self):
-        
-        # list all audio devices known to your system
-        print("Display input/output devices")
-        print(sd.query_devices())
-
 
         # get the samplerate - this is needed by the Kaldi recognizer
         device_info = sd.query_devices(sd.default.device[0], 'input')
         samplerate = int(device_info['default_samplerate'])
 
         # display the default input device
-        print("===> Initial Default Device Number:{} Description: {}".format(sd.default.device[0], device_info))
 
         # setup queue and callback function
         q = queue.Queue()
@@ -39,29 +33,27 @@ class MicrophoneThread(QThread):
             q.put(bytes(indata))
 
         # build the model and recognizer objects.
-        print("===> Build the model and recognizer objects.  This will take a few minutes.")
         modelPath = str(Path(__file__).resolve().parent) +  "/models/vosk-model-small-en-us-0.15"
         model = Model(modelPath)
         recognizer = KaldiRecognizer(model, samplerate)
         recognizer.SetWords(False)
 
-        print("===> Begin recording. Press Ctrl+C to stop the recording ")
         try:
-            with sd.RawInputStream(dtype='int16',
-                                channels=1,
-
-                                callback=recordCallback):
+            with sd.RawInputStream(
+                dtype='int16',
+                channels=1,
+                blocksize=8000,
+                callback=recordCallback,
+                samplerate=samplerate,
+            ):
                 while True:
                     data = q.get()
-                    if recognizer.AcceptWaveform(data):
-                        recognizerResult = recognizer.Result()
-                        resultDict = json.loads(recognizerResult)
-                        if not resultDict.get("text", "") == "":
-                            print(resultDict["text"])
-                            self.window.setSubtitleText(resultDict["text"])
-                        else:
-                            print("no input sound")
-
+                    if not recognizer.AcceptWaveform(data):
+                        partialResultDict = json.loads(recognizer.PartialResult())
+                        if not partialResultDict.get("partial", "") == "":
+                            print(partialResultDict["partial"])
+                            self.window.setSubtitleText(partialResultDict["partial"])
+                
         except KeyboardInterrupt:
             print('===> Finished Recording')
         except Exception as e:

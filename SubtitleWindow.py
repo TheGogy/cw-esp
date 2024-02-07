@@ -122,8 +122,6 @@ class SubtitleWindow(QMainWindow):
         '''
         if self.label.text() == "[Subtitles]":
             pass
-        else:
-            text = self.label.text() + " " + text
         size = QFontMetrics(self.label.font())
         text_split = text.split(" ")
         while size.width(text) > self.width() and len(text_split) > 1: #removes the oldest word until it fits
