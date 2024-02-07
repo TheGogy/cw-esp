@@ -1,6 +1,6 @@
 import yaml
 from pathlib import Path
-from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
+from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout,QVBoxLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
 from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator
 import sys
@@ -24,21 +24,57 @@ class SettingsWindow(QDialog):
         super().__init__()
         self.setGeometry(100,100,400,200)
         self.setWindowTitle("User Selection")
-        self.currentUserSettings = Profiles.getCurrentUserSettings()
-        self.initLayout()
-        self.resetUserSettings()
+        self.layout = QHBoxLayout()
+        self.setLayout(self.layout)
+        self.initLeftColumnLayout()
+        self.layout.addLayout(self.leftColumnLayout,1)
+        self.RightColumnLayout = QFormLayout()
+        self.layout.addLayout(self.RightColumnLayout,9)
+        self.initProfilesLayout()
         self.communicate = Communicate()
 
-    def initLayout(self):
-        self.layout = QFormLayout()
-        self.setLayout(self.layout)
+    def emptyFormLayout(self,layout: QFormLayout):
+        while self.RightColumnLayout.rowCount() > 0:
+            self.RightColumnLayout.removeRow(0)
+
+    def initProfilesLayout(self):
+        self.emptyFormLayout(self.RightColumnLayout)
+        self.currentUserSettings = Profiles.getCurrentUserSettings()
         self.initUserDropdownMenu()
         self.initErrorMessage()
         self.initFontrgba()
         self.initFontSelector()
         self.initFontSizeSelector()
-        self.buttonInit()      
+        self.buttonInit()
+        self.resetUserSettings()
 
+    def initModelSelector(self):
+        self.emptyFormLayout(self.RightColumnLayout)
+        self.RightColumnLayout.addRow(QLabel("Model place holder"))
+
+    def initLeftColumnLayout(self):
+        self.leftColumnExpanded = False
+        self.leftColumnLayout = QFormLayout()
+        collapseButton = QPushButton("",self)
+        collapseButton.clicked.connect(self.collapsebuttonFunction)
+        self.leftColumnLayout.addRow(collapseButton)
+        profilesButton = QPushButton("Profiles",self)
+        profilesButton.clicked.connect(self.initProfilesLayout)
+        self.leftColumnLayout.addRow(profilesButton)
+        modelsButton = QPushButton("Models",self)
+        modelsButton.clicked.connect(self.initModelSelector)
+        self.leftColumnLayout.addRow(modelsButton)
+
+    def collapsebuttonFunction(self):
+        if not self.leftColumnExpanded:
+            self.layout.setStretch(1,3)
+        else:
+            self.layout.setStretch(1,9)
+        self.leftColumnExpanded = not self.leftColumnExpanded
+    
+    def initTextPromptLayout(self):
+        self.textPromptLayout = QFormLayout()
+    
    ################ Drop down menu ################
  
     def initUserDropdownMenu(self):
@@ -46,7 +82,7 @@ class SettingsWindow(QDialog):
         self.DropDownMenu = QComboBox()
         self.fillDropDownMenu()
         self.DropDownMenu.activated.connect(self.changedUser)
-        self.layout.addWidget(self.DropDownMenu)
+        self.RightColumnLayout.addWidget(self.DropDownMenu)
         self.DropDownMenu.installEventFilter(self) 
         
     def fillDropDownMenu(self):
@@ -82,7 +118,7 @@ class SettingsWindow(QDialog):
         self.errorMessage = QLabel()
         self.errorMessage.setText("")
         self.errorMessage.setStyleSheet("color: red")
-        self.layout.addWidget(self.errorMessage)
+        self.RightColumnLayout.addWidget(self.errorMessage)
 
     ################ Deals with font colour ################ 
 
@@ -96,10 +132,10 @@ class SettingsWindow(QDialog):
         fontrgbSlidersBox.addLayout(self.fontGreenSliderBox)
         self.fontBlueSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontBlueSliderBox)
-        self.layout.addRow("Colour:",fontrgbSlidersBox)
+        self.RightColumnLayout.addRow("Colour:",fontrgbSlidersBox)
         #adding font opacity slider
         self.fontOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)
-        self.layout.addRow("Font Opacity: ",self.fontOpacityBox)
+        self.RightColumnLayout.addRow("Font Opacity: ",self.fontOpacityBox)
     
     def updateSliderIndicators(self):
         '''Updates the slider indicator and dictionary when a slider is moved'''
@@ -139,7 +175,7 @@ class SettingsWindow(QDialog):
         self.fontSelector = QLineEdit("")
         self.fontSelector.setCompleter(fontCompleter)
         self.fontSelector.textChanged.connect(self.fontSelectorDictionary)
-        self.layout.addRow("Font:" ,self.fontSelector)
+        self.RightColumnLayout.addRow("Font:" ,self.fontSelector)
 
     def fontSelectorDictionary(self):
         '''Updates the form selector dictionary'''
@@ -154,7 +190,7 @@ class SettingsWindow(QDialog):
         self.fontSizeSelector = QLineEdit("")
         self.fontSizeSelector.setValidator(fontSizeValidator)
         self.fontSizeSelector.textChanged.connect(self.fontSizeSelectorDictionary)
-        self.layout.addRow("Font Size:",self.fontSizeSelector)
+        self.RightColumnLayout.addRow("Font Size:",self.fontSizeSelector)
 
     def fontSizeSelectorDictionary(self):
         if self.fontSizeSelector.text() == "":
@@ -175,7 +211,7 @@ class SettingsWindow(QDialog):
         buttonLayout.addWidget(self.deleteUserButton,2)
         buttonLayout.addStretch(6)
         buttonLayout.addWidget(self.saveButton,2)
-        self.layout.addRow(buttonLayout)
+        self.RightColumnLayout.addRow(buttonLayout)
         self.saveQuit = False
 
     def saveButtonFunction(self): #Bug: if repeatly clicked fast it break as it is unable the first run finish breaking the logic 
