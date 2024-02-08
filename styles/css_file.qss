@@ -1,0 +1,55 @@
+QComboBox { 
+    border: 1px solid #D8DEE9;
+    border-radius: 3px;
+    padding: 1px 18px 1px 3px;
+    min-width: 6em;
+}
+
+/* Drop Down Button */
+QComboBox, QComboBox::drop-down:editable {
+    background: #D8DEE9;
+}
+
+/* Top Text Box */
+QComboBox { 
+    background: #4C566A;
+    /* color effects the font colour of the ComboBox */
+    color:#ffffff;
+}
+
+/* Slider */
+QSlider{ 
+    background: transparent; 
+}
+
+/* Background Window */
+QDialog {
+    background: #3B4252;
+
+    /* Gradient - Polar Night */
+    /* background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 ##4C566A, stop:1 #3B4252) */
+} 
+
+/* Font */
+QLabel {
+    color: #D8DEE9; 
+}
+
+/* Font and Size */
+QLineEdit{
+    background: #4C566A;
+    /* color effects the font colour in Font and Size Box */
+    color: #ffffff;
+}
+
+/* Delete and Save */
+QPushButton{
+    background: #D8DEE9;
+}
+
+
+
+/* Useful Notes */
+/* Inspired by this colour pallette - https://www.nordtheme.com/ */
+/* background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 ##4C566A, stop:1 #3B4252) */
+
