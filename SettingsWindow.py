@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxL
 from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator
 import sys
-import os
 import re
 from Profiles import Profiles
 
@@ -26,10 +25,11 @@ class SettingsWindow(QDialog):
         self.setWindowTitle("User Selection")
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
-        self.initLeftColumnLayout()
-        self.layout.addLayout(self.leftColumnLayout,1)
+        self.leftColumnLayout = QFormLayout()
         self.RightColumnLayout = QFormLayout()
+        self.layout.addLayout(self.leftColumnLayout,1)
         self.layout.addLayout(self.RightColumnLayout,9)
+        self.initLeftColumnLayout()
         self.initProfilesLayout()
         self.communicate = Communicate()
 
@@ -54,7 +54,6 @@ class SettingsWindow(QDialog):
 
     def initLeftColumnLayout(self):
         self.leftColumnExpanded = False
-        self.leftColumnLayout = QFormLayout()
         collapseButton = QPushButton("",self)
         collapseButton.clicked.connect(self.collapsebuttonFunction)
         self.leftColumnLayout.addRow(collapseButton)
