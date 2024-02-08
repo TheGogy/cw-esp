@@ -53,22 +53,30 @@ class SettingsWindow(QDialog):
         self.RightColumnLayout.addRow(QLabel("Model place holder"))
 
     def initLeftColumnLayout(self):
+        '''Forgive me lord I exactly what i am doing'''
         self.leftColumnExpanded = False
-        collapseButton = QPushButton("",self)
-        collapseButton.clicked.connect(self.collapsebuttonFunction)
-        self.leftColumnLayout.addRow(collapseButton)
-        profilesButton = QPushButton("Profiles",self)
-        profilesButton.clicked.connect(self.initProfilesLayout)
-        self.leftColumnLayout.addRow(profilesButton)
-        modelsButton = QPushButton("Models",self)
-        modelsButton.clicked.connect(self.initModelSelector)
-        self.leftColumnLayout.addRow(modelsButton)
+        self.collapseButton = QPushButton("",self)
+        self.setMinimumWidth(1)
+        self.collapseButton.clicked.connect(self.collapsebuttonFunction)
+        self.leftColumnLayout.addRow(self.collapseButton)
+        self.profilesButton = QPushButton("P",self)
+        self.profilesButton.setMinimumWidth(1)
+        self.profilesButton.clicked.connect(self.initProfilesLayout)
+        self.leftColumnLayout.addRow(self.profilesButton)
+        self.modelsButton = QPushButton("M",self)
+        self.modelsButton.setMinimumWidth(1)
+        self.modelsButton.clicked.connect(self.initModelSelector)
+        self.leftColumnLayout.addRow(self.modelsButton)
 
     def collapsebuttonFunction(self):
         if not self.leftColumnExpanded:
             self.layout.setStretch(1,3)
+            self.modelsButton.setText("Models")
+            self.profilesButton.setText("Profiles")
         else:
             self.layout.setStretch(1,9)
+            self.modelsButton.setText("M")
+            self.profilesButton.setText("P")
         self.leftColumnExpanded = not self.leftColumnExpanded
     
     def initTextPromptLayout(self):
@@ -180,7 +188,7 @@ class SettingsWindow(QDialog):
         '''Updates the form selector dictionary'''
         self.currentUserSettings['font-family'] = self.fontSelector.text()
         self.saveQuitOff()
-    
+
     ################ Font Size Selector ################
 
     def initFontSizeSelector(self):
