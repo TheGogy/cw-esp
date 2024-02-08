@@ -31,6 +31,9 @@ class SubtitleWindow(QMainWindow):
         self.label.setStyleSheet(self.css)
         self.label.setGeometry(0, 0, self.width(), self.height())
 
+        # load the style sheet 
+        # self.loadStylesheet("cw-esp-1/styles /css_file.css")
+
     #MouseEvents implement window movement without having to have a window with a frame 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton: 
@@ -127,3 +130,4 @@ if __name__ == '__main__':
     window = SubtitleWindow()
     window.show()
     sys.exit(app.exec_())
+
