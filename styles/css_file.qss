@@ -25,9 +25,6 @@ QSlider{
 /* Background Window */
 QDialog {
     background: #3B4252;
-
-    /* Gradient - Polar Night */
-    /* background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 ##4C566A, stop:1 #3B4252) */
 } 
 
 /* Font */
@@ -46,10 +43,3 @@ QLineEdit{
 QPushButton{
     background: #D8DEE9;
 }
-
-
-
-/* Useful Notes */
-/* Inspired by this colour pallette - https://www.nordtheme.com/ */
-/* background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 ##4C566A, stop:1 #3B4252) */
-

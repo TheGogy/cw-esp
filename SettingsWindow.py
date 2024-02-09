@@ -7,9 +7,7 @@ import sys
 import os
 import re
 from Profiles import Profiles
-from PyQt5.QtWidgets import QApplication, QDialog
 from PyQt5.QtCore import QFile, QTextStream
-import sys
 
 
 
@@ -26,15 +24,12 @@ class SettingsWindow(QDialog):
     
     def __init__(self):
         super().__init__()
-        self.setWindowIcon(QIcon("styles/Picture1.png"))
         self.setGeometry(100,100,400,200)
         self.setWindowTitle("User Selection")
         self.currentUserSettings = Profiles.getCurrentUserSettings()
         self.initLayout()
         self.resetUserSettings()
         self.communicate = Communicate()
-        
-        # STYLE SHEET 
         self.loadStylesheet("styles/css_file.qss")
 
 
@@ -49,7 +44,7 @@ class SettingsWindow(QDialog):
         self.buttonInit()      
 
 
-    # STYLE SHEET 
+    # Opening and Reading Stylesheet
     def loadStylesheet(self, filename):
         style_file = QFile(filename)
         if not style_file.open(QFile.ReadOnly | QFile.Text):
@@ -60,8 +55,6 @@ class SettingsWindow(QDialog):
             
         stream = QTextStream(style_file)
         stylesheet_content = stream.readAll()
-        # print("Stylesheet content:")
-        # print(stylesheet_content)
         self.setStyleSheet(stylesheet_content)  
 
 
@@ -166,7 +159,6 @@ class SettingsWindow(QDialog):
         self.layout.addRow("Font Opacity: ",self.fontOpacityBox)
 
 
-    
     def updateSliderIndicators(self):
         '''Updates the slider indicator and dictionary when a slider is moved'''
         r = self.fontRedSliderBox.itemAt(1).widget().value()
@@ -177,8 +169,6 @@ class SettingsWindow(QDialog):
         self.fontrgbaDictionary(f"rgba({r},{g},{b},{a})")
         self.setFontRgbaSliders(f"rgba({r},{g},{b},{a})")
         self.saveQuitOff()
-
-        
 
 
     def fontrgbaDictionary(self,value: str):
@@ -197,8 +187,6 @@ class SettingsWindow(QDialog):
         self.fontBlueSliderBox.itemAt(0).widget().setText(rgbaValues[2])
         self.fontOpacityBox.itemAt(1).widget().setValue(int(float(rgbaValues[3]) * 100))
         self.fontOpacityBox.itemAt(0).widget().setText(rgbaValues[3])
-
-
 
     ################ Font Selector ################
 
