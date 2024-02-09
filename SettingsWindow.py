@@ -3,11 +3,11 @@ from pathlib import Path
 from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
 from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator,QIcon
+from PyQt5.QtCore import QFile, QTextStream
 import sys
 import os
 import re
 from Profiles import Profiles
-from PyQt5.QtCore import QFile, QTextStream
 
 
 
@@ -30,7 +30,8 @@ class SettingsWindow(QDialog):
         self.initLayout()
         self.resetUserSettings()
         self.communicate = Communicate()
-        self.loadStylesheet("styles/css_file.qss")
+        self.cssPath = Path(__file__) / "styles/css_file.qss"
+        self.loadStylesheet(self.cssPath)
 
 
     def initLayout(self):
@@ -346,4 +347,3 @@ if __name__ == '__main__':
     window = SettingsWindow()
     window.show()
     sys.exit(app.exec_())
-
