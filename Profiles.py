@@ -1,6 +1,11 @@
+from zipfile import ZipFile
+from urllib.request import urlretrieve
+from bs4 import BeautifulSoup
 from pathlib import Path
+import requests
 import yaml
 import os
+import re
 class Profiles:
     ################ Database Queries ################
 
@@ -20,10 +25,7 @@ class Profiles:
         return Profiles.getUserSettings(Profiles.getCurrentUser())
 
     def userExists(user = None):
-        if user in Profiles.getUserList():
-            return True
-        else:
-            return False
+        return user in Profiles.getUserList()
 
     def getUserSettings(user = None):
         userProfiles = Profiles.getUserProfiles()
@@ -61,6 +63,16 @@ class Profiles:
     ################ Data Editor  ################
     
     ###PUBLIC###
+
+    def saveProfilesFile(userProfiles):
+        appDirectory = str(Path(__file__).resolve().parent)
+        with open(f"{appDirectory}/Profiles.yml", 'w') as file:
+            yaml.dump(userProfiles, file)
+    
+    def addUser(user):
+        userProfiles = Profiles.getUserProfiles()
+        userProfiles['Users'].add(user)
+        Profiles.saveProfilesFile(userProfiles)
 
     def generateDefaultSettings():
         userSettings = {}
@@ -101,26 +113,63 @@ class Profiles:
             'Current': None,
             'Users': set(),
             'DefaultPath': None,
+            'availableModels': {},
+            'installedModels': set(),
+            'CurrentModel': None,
         }
-        profilesPath = f"{appDirectory}/Profiles.yml"
         defaultPath =  f"{appDirectory}/Users"
         if not os.path.exists(defaultPath):
             os.mkdir(defaultPath)
         data['DefaultPath'] = defaultPath
+        modelPath = f"{appDirectory}/Models"
+        if not os.path.exists(modelPath):
+            os.mkdir(modelPath)
+        data['availableModels'] = Profiles.generateAvailableModels()
+        profilesPath = f"{appDirectory}/Profiles.yml"
         with open(profilesPath, 'w') as file:
             yaml.dump(data, file, default_flow_style=False)
-
-    def saveProfilesFile(userProfiles):
-        appDirectory = str(Path(__file__).resolve().parent)
-        with open(f"{appDirectory}/Profiles.yml", 'w') as file:
-            yaml.dump(userProfiles, file)
-    
-    def addUser(user):
-        userProfiles = Profiles.getUserProfiles()
-        userProfiles['Users'].add(user)
-        Profiles.saveProfilesFile(userProfiles)
 
     def setCurrentUser(user):
         userProfiles = Profiles.getUserProfiles()
         userProfiles['Current'] = user
         Profiles.saveProfilesFile(userProfiles)
+
+    def generateAvailableModels():
+        availableModels = {}
+        modelsUrl = "https://alphacephei.com/vosk/models"
+        response = requests.get(modelsUrl)
+        soup = BeautifulSoup(response.text,"html.parser")
+        links = soup.select('a')
+        for link in links:
+            href = link.get('href')
+            if re.match('\S*vosk-model\S*.zip',href):
+                availableModels[link.get_text()] = href
+        return availableModels
+ 
+ 
+    def getModelUrls():
+        return Profiles.getUserProfiles()['availableModels']
+
+    def getAvailableModels():
+        return list(Profiles.getUserProfiles()['availableModels'].keys())
+
+    def getInstalledModels():
+        return list(Profiles.getUserProfiles()['installedModels'])
+
+    def installModel(modelName):
+        try:
+            modelUrl = Profiles.getModelUrls()[modelName]
+        except KeyError:
+            raise ValueError("Model not available.")
+        filename = "Models/temp.zip"
+        urlretrieve(modelUrl,filename)
+        with ZipFile("Models/temp.zip", "r") as zObject:
+            zObject.extractall("Models")
+        os.remove("Models/temp.zip")
+        profiles = Profiles.getUserProfiles()
+        profiles['CurrentModel'] = modelName
+        profiles['installedModels'].add(modelName)
+        Profiles.saveProfilesFile(profiles)
+
+if __name__ == '__main__':
+    Profiles.generateProfilesFile()

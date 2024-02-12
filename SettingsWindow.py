@@ -5,6 +5,7 @@ from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator
 import sys
 import re
+import threading
 from Profiles import Profiles
 
 
@@ -18,7 +19,7 @@ class SettingsWindow(QDialog):
     NEW_USER_MESSAGE = "Create New User"
   
     ################ Initialization ################
-    
+    installSignal = pyqtSignal() 
     def __init__(self):
         super().__init__()
         self.setGeometry(100,100,400,200)
@@ -33,12 +34,19 @@ class SettingsWindow(QDialog):
         self.initProfilesLayout()
         self.communicate = Communicate()
 
-    def emptyFormLayout(self,layout: QFormLayout):
-        while self.RightColumnLayout.rowCount() > 0:
-            self.RightColumnLayout.removeRow(0)
-
+    def emptyLayout(self,layout):
+        for i in reversed(range(layout.count())):
+            if layout.itemAt(i).layout() is not None:
+                childLayout = layout.itemAt(i)
+                self.emptyLayout(childLayout.layout())
+                childLayout.setParent(None)
+                childLayout.layout().deleteLater()
+            elif layout.itemAt(i).widget() is not None:
+                widget = layout.itemAt(i).widget()
+                widget.setParent(None)
+                widget.deleteLater()
     def initProfilesLayout(self):
-        self.emptyFormLayout(self.RightColumnLayout)
+        self.emptyLayout(self.RightColumnLayout)
         self.currentUserSettings = Profiles.getCurrentUserSettings()
         self.initUserDropdownMenu()
         self.initErrorMessage()
@@ -48,14 +56,30 @@ class SettingsWindow(QDialog):
         self.buttonInit()
         self.resetUserSettings()
 
-    def initModelSelector(self):
-        self.emptyFormLayout(self.RightColumnLayout)
-        self.RightColumnLayout.addRow(QLabel("Model place holder"))
+    def initInstallLayout(self):
+        self.emptyLayout(self.RightColumnLayout)
+        installedModels = Profiles.getInstalledModels()
+        availableModels = Profiles.getAvailableModels()
+        self.modelSelector = QComboBox()
+        for model in sorted(availableModels):
+           self.modelSelector.addItem(model) 
+        self.RightColumnLayout.addRow(self.modelSelector)
+        self.installSignal.connect(self.installFunction,Qt.QueuedConnection)
+        installButton = QPushButton("install",self)
+        installButton.clicked.connect(self.installSignal.emit)
+        self.RightColumnLayout.addRow(installButton)
+    def installFunction(self):
+        print("begun")
+        Profiles.installModel(self.modelSelector.currentText())
+        print("end")
 
+    def installButtonFunction(self):
+        self.installSignal.emit()
+        
     def initLeftColumnLayout(self):
-        '''Forgive me lord I exactly what i am doing'''
         self.leftColumnExpanded = False
         self.collapseButton = QPushButton("",self)
+        self.textPromptLayout = QFormLayout()
         self.setMinimumWidth(1)
         self.collapseButton.clicked.connect(self.collapsebuttonFunction)
         self.leftColumnLayout.addRow(self.collapseButton)
@@ -65,7 +89,7 @@ class SettingsWindow(QDialog):
         self.leftColumnLayout.addRow(self.profilesButton)
         self.modelsButton = QPushButton("M",self)
         self.modelsButton.setMinimumWidth(1)
-        self.modelsButton.clicked.connect(self.initModelSelector)
+        self.modelsButton.clicked.connect(self.initInstallLayout)
         self.leftColumnLayout.addRow(self.modelsButton)
 
     def collapsebuttonFunction(self):
@@ -79,9 +103,7 @@ class SettingsWindow(QDialog):
             self.profilesButton.setText("P")
         self.leftColumnExpanded = not self.leftColumnExpanded
     
-    def initTextPromptLayout(self):
-        self.textPromptLayout = QFormLayout()
-    
+   
    ################ Drop down menu ################
  
     def initUserDropdownMenu(self):
@@ -322,8 +344,6 @@ class SettingsWindow(QDialog):
             self.DropDownMenu.setEditable(True)
         return super().eventFilter(source, event)
     
-    def mousePressEvent(self, event):
-        self.saveQuitOff()
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
