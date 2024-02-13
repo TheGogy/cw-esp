@@ -2,3 +2,4 @@
 models/*model*
 __pycache__
 test.py
+.DS_Store

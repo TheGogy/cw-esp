@@ -1,12 +1,13 @@
 import yaml
 from pathlib import Path
 from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
-from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt
-from PyQt5.QtGui import QFontDatabase,QDoubleValidator
+from PyQt5.QtCore import  pyqtSignal, QObject, QRect, QEvent, Qt, QFile, QTextStream
+from PyQt5.QtGui import QFontDatabase,QDoubleValidator,QIcon
 import sys
 import os
 import re
 from Profiles import Profiles
+
 
 
 class Communicate(QObject):
@@ -28,6 +29,9 @@ class SettingsWindow(QDialog):
         self.initLayout()
         self.resetUserSettings()
         self.communicate = Communicate()
+        self.cssPath = Path(__file__) / "styles/css_file.qss"
+        self.loadStylesheet(self.cssPath)
+
 
     def initLayout(self):
         self.layout = QFormLayout()
@@ -38,6 +42,22 @@ class SettingsWindow(QDialog):
         self.initFontSelector()
         self.initFontSizeSelector()
         self.buttonInit()      
+
+
+    # Opening and Reading Stylesheet
+    def loadStylesheet(self, filename):
+        style_file = QFile(filename)
+        if not style_file.open(QFile.ReadOnly | QFile.Text):
+            print("error - can't open css_file :", filename)
+            return
+        else:
+            print("opened successfully:", filename)
+            
+        stream = QTextStream(style_file)
+        stylesheet_content = stream.readAll()
+        self.setStyleSheet(stylesheet_content)  
+
+
 
    ################ Drop down menu ################
  
@@ -86,30 +106,70 @@ class SettingsWindow(QDialog):
 
     ################ Deals with font colour ################ 
 
+    def generate_slider_style(self, color):
+        return f"""
+            QSlider::groove:horizontal {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                            stop:0 white, stop:1 {color});
+                border: 1px solid #D8DEE9;
+                height: 7.5px;
+                margin: 0px;
+                border-radius: 4px;
+            }}
+            QSlider::handle:horizontal {{
+                background: #D8DEE9;
+                border: 1px solid #D8DEE9;
+                width: 4px;
+                height: 4px;
+                margin: -4px 0;
+                border-radius: 2px;
+            }}
+            QSlider::sub-page:horizontal {{
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 white, stop:1 {color});
+            }}
+            QSlider::add-page:horizontal {{
+                background: #D8DEE9;
+            }}
+        """
+
     def initFontrgba(self):
         '''Initializes font rgba sliders and adds them to form'''
          #adding fontrgba slider
         fontrgbSlidersBox = QHBoxLayout()
+
+        # Styling Red Slider 
         self.fontRedSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontRedSliderBox)
-        self.fontGreenSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
+        self.fontRedSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("red"))
+        
+        # Styling for Green Slider
+        self.fontGreenSliderBox = self.generateSliderBox(0, 255, self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontGreenSliderBox)
-        self.fontBlueSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
+        self.fontGreenSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("green"))
+
+        # Styling for blue slider
+        self.fontBlueSliderBox = self.generateSliderBox(0, 255, self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontBlueSliderBox)
+        self.fontBlueSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("rgb(0, 0, 255)"))
+
         self.layout.addRow("Colour:",fontrgbSlidersBox)
-        #adding font opacity slider
+        # add the font opacity slider
         self.fontOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)
+        self.fontOpacityBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("black"))
         self.layout.addRow("Font Opacity: ",self.fontOpacityBox)
-    
+
+
     def updateSliderIndicators(self):
         '''Updates the slider indicator and dictionary when a slider is moved'''
         r = self.fontRedSliderBox.itemAt(1).widget().value()
         g = self.fontGreenSliderBox.itemAt(1).widget().value()
         b = self.fontBlueSliderBox.itemAt(1).widget().value()
         a = self.fontOpacityBox.itemAt(1).widget().value() / 100
+
         self.fontrgbaDictionary(f"rgba({r},{g},{b},{a})")
         self.setFontRgbaSliders(f"rgba({r},{g},{b},{a})")
         self.saveQuitOff()
+
 
     def fontrgbaDictionary(self,value: str):
         '''Updates dictionary'''
@@ -127,7 +187,6 @@ class SettingsWindow(QDialog):
         self.fontBlueSliderBox.itemAt(0).widget().setText(rgbaValues[2])
         self.fontOpacityBox.itemAt(1).widget().setValue(int(float(rgbaValues[3]) * 100))
         self.fontOpacityBox.itemAt(0).widget().setText(rgbaValues[3])
-
 
     ################ Font Selector ################
 

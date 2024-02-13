@@ -119,11 +119,10 @@ class SubtitleWindow(QMainWindow):
             text = " ".join(text_split)
         self.label.setText(text)
         self.update()
-    
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = SubtitleWindow()
     window.show()
     sys.exit(app.exec_())
+
