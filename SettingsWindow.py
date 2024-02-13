@@ -3,7 +3,6 @@ from pathlib import Path
 from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
 from PyQt5.QtCore import  pyqtSignal, QObject, QRect, QEvent, Qt, QFile, QTextStream
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator,QIcon
-from PyQt5.QtCore import QFile, QTextStream
 import sys
 import os
 import re
