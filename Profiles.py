@@ -20,10 +20,7 @@ class Profiles:
         return Profiles.getUserSettings(Profiles.getCurrentUser())
 
     def userExists(user = None):
-        if user in Profiles.getUserList():
-            return True
-        else:
-            return False
+        return user in Profiles.getUserList()
 
     def getUserSettings(user = None):
         userProfiles = Profiles.getUserProfiles()
