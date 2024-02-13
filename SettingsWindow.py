@@ -29,7 +29,7 @@ class SettingsWindow(QDialog):
         self.initLayout()
         self.resetUserSettings()
         self.communicate = Communicate()
-        self.cssPath = Path(__file__) / "styles/css_file.qss"
+        self.cssPath = Path(__file__).parent / "styles/css_file.qss"
         self.loadStylesheet(self.cssPath)
 
 
@@ -46,7 +46,7 @@ class SettingsWindow(QDialog):
 
     # Opening and Reading Stylesheet
     def loadStylesheet(self, filename):
-        style_file = QFile(filename)
+        style_file = QFile(str(filename))
         if not style_file.open(QFile.ReadOnly | QFile.Text):
             print("error - can't open css_file :", filename)
             return
