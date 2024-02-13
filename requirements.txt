@@ -1,4 +1,5 @@
 sounddevice==0.4.6
+pyinstaller==6.4.0
 vosk==0.3.44
 srt==3.5.3
 pyyaml==6.0.1

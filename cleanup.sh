@@ -1,3 +1,2 @@
-rm -r Users
-rm Profiles.yml
-rm -r Models
+rm -r Users Models build dist
+rm Profiles.yml main.spec
