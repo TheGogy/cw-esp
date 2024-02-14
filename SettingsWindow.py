@@ -1,7 +1,7 @@
 import yaml
 from pathlib import Path
 from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout,QVBoxLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
-from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt
+from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt,QRunnable,pyqtSlot,QThreadPool
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator
 import sys
 import re
@@ -12,6 +12,23 @@ from Profiles import Profiles
 class Communicate(QObject):
     closed = pyqtSignal(str) 
 
+class installWorkerSignals(QObject):
+    finished = pyqtSignal()
+    began = pyqtSignal()
+
+class installWorker(QRunnable):
+    def __init__(self, *args,**kwargs):
+        super(installWorker,self).__init__()
+        self.args = args
+        self.kwargs = kwargs
+        self.signals =installWorkerSignals()
+
+    @pyqtSlot()
+    def run(self):
+        self.signals.began.emit()
+        Profiles.installModel(self.args[0])
+        self.signals.finished.emit()
+
 class SettingsWindow(QDialog):
    
     ################ Constants ################
@@ -19,7 +36,7 @@ class SettingsWindow(QDialog):
     NEW_USER_MESSAGE = "Create New User"
   
     ################ Initialization ################
-    installSignal = pyqtSignal() 
+
     def __init__(self):
         super().__init__()
         self.setGeometry(100,100,400,200)
@@ -33,6 +50,7 @@ class SettingsWindow(QDialog):
         self.initLeftColumnLayout()
         self.initProfilesLayout()
         self.communicate = Communicate()
+        self.threadpool = QThreadPool()
 
     def emptyLayout(self,layout):
         for i in reversed(range(layout.count())):
@@ -45,6 +63,7 @@ class SettingsWindow(QDialog):
                 widget = layout.itemAt(i).widget()
                 widget.setParent(None)
                 widget.deleteLater()
+
     def initProfilesLayout(self):
         self.emptyLayout(self.RightColumnLayout)
         self.currentUserSettings = Profiles.getCurrentUserSettings()
@@ -64,18 +83,22 @@ class SettingsWindow(QDialog):
         for model in sorted(availableModels):
            self.modelSelector.addItem(model) 
         self.RightColumnLayout.addRow(self.modelSelector)
-        self.installSignal.connect(self.installFunction,Qt.QueuedConnection)
         installButton = QPushButton("install",self)
-        installButton.clicked.connect(self.installSignal.emit)
+        installButton.clicked.connect(self.installFunction)
         self.RightColumnLayout.addRow(installButton)
-    def installFunction(self):
-        print("begun")
-        Profiles.installModel(self.modelSelector.currentText())
-        print("end")
 
-    def installButtonFunction(self):
-        self.installSignal.emit()
-        
+    def installFunction(self):
+        worker = installWorker(self.modelSelector.currentText())
+        worker.signals.began.connect(self.installStarted)
+        worker.signals.finished.connect(self.installCompleted)
+        self.threadpool.start(worker)
+
+    def installStarted(self):
+        print("BEGANNN")
+
+    def installCompleted(self):
+        print("FIIIINNNNNNIIIIISSSSSSHEEEEDDD")
+
     def initLeftColumnLayout(self):
         self.leftColumnExpanded = False
         self.collapseButton = QPushButton("",self)
