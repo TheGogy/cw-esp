@@ -5,7 +5,6 @@ from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt,QRunnable,pyqtSlot
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator
 import sys
 import re
-import threading
 from Profiles import Profiles
 
 

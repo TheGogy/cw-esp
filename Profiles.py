@@ -43,10 +43,11 @@ class Profiles:
     ###PRIVATE###
 
     def getUserPath(user = None):
-        defaultProfilePath = Profiles.getUserProfiles()["DefaultPath"] 
-        return f"{defaultProfilePath}/{user}.css"
+        defaultPath = Profiles.getUserProfiles()["DefaultPath"] 
+        return f"{defaultPath}/Users/{user}.css"
 
     def getUserProfiles():
+        print("hello")
         appDirectory =  Path(str(Path(__file__).resolve().parent))
         profilesPath = f"{appDirectory}/Profiles.yml"
         if not Path(profilesPath).exists():
@@ -108,7 +109,8 @@ class Profiles:
     DefaultPath: default path new users will be saved to
     '''
     def generateProfilesFile():
-        appDirectory = str(Path(__file__).resolve().parent) 
+        print("hello")
+        defaultPath = str(Path(__file__).resolve().parent) 
         data = {
             'Current': None,
             'Users': set(),
@@ -117,15 +119,15 @@ class Profiles:
             'installedModels': set(),
             'CurrentModel': None,
         }
-        defaultPath =  f"{appDirectory}/Users"
-        if not os.path.exists(defaultPath):
-            os.mkdir(defaultPath)
+        userPath =  f"{defaultPath}/Users"
+        if not os.path.exists(userPath):
+            os.mkdir(userPath)
         data['DefaultPath'] = defaultPath
-        modelPath = f"{appDirectory}/Models"
+        modelPath = f"{defaultPath}/Models"
         if not os.path.exists(modelPath):
             os.mkdir(modelPath)
         data['availableModels'] = Profiles.generateAvailableModels()
-        profilesPath = f"{appDirectory}/Profiles.yml"
+        profilesPath = f"{defaultPath}/Profiles.yml"
         with open(profilesPath, 'w') as file:
             yaml.dump(data, file, default_flow_style=False)
 
@@ -170,6 +172,15 @@ class Profiles:
         profiles['CurrentModel'] = modelName
         profiles['installedModels'].add(modelName)
         Profiles.saveProfilesFile(profiles)
+
+    def getCurrentModelPath():
+        profiles = Profiles.getUserProfiles()
+        defaultPath = profiles["DefaultPath"]
+        currentModel = profiles["CurrentModel"]
+        if currentModel is not None:
+            return f"{defaultPath}/Models/{currentModel}"
+        else:
+            return None
 
 if __name__ == '__main__':
     Profiles.generateProfilesFile()
