@@ -76,7 +76,7 @@ class Profiles:
             userFile.write(css_string)
         if not Profiles.userExists(user):
             Profiles.addUser(user)
-        Profiles.setCurrentUser(user) #WHY ? 
+        Profiles.setCurrentUser(user) 
 
     def deleteUser(user: str):
         userProfiles = Profiles.getUserProfiles()
