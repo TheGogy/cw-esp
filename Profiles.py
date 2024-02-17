@@ -47,7 +47,6 @@ class Profiles:
         return f"{defaultPath}/Users/{user}.css"
 
     def getUserProfiles():
-        print("hello")
         appDirectory =  Path(str(Path(__file__).resolve().parent))
         profilesPath = f"{appDirectory}/Profiles.yml"
         if not Path(profilesPath).exists():
@@ -109,7 +108,6 @@ class Profiles:
     DefaultPath: default path new users will be saved to
     '''
     def generateProfilesFile():
-        print("hello")
         defaultPath = str(Path(__file__).resolve().parent) 
         data = {
             'Current': None,
