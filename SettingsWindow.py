@@ -29,7 +29,7 @@ class SettingsWindow(QDialog):
         self.initLayout()
         self.resetUserSettings()
         self.communicate = Communicate()
-        self.cssPath = Path(__file__) / "styles/css_file.qss"
+        self.cssPath = Path(__file__).parent / "styles/css_file.qss"
         self.loadStylesheet(self.cssPath)
 
 
@@ -46,13 +46,13 @@ class SettingsWindow(QDialog):
 
     # Opening and Reading Stylesheet
     def loadStylesheet(self, filename):
-        style_file = QFile(filename)
+        style_file = QFile(str(filename))
         if not style_file.open(QFile.ReadOnly | QFile.Text):
             print("error - can't open css_file :", filename)
             return
         else:
             print("opened successfully:", filename)
-            
+
         stream = QTextStream(style_file)
         stylesheet_content = stream.readAll()
         self.setStyleSheet(stylesheet_content)  
@@ -68,7 +68,7 @@ class SettingsWindow(QDialog):
         self.DropDownMenu.activated.connect(self.changedUser)
         self.layout.addWidget(self.DropDownMenu)
         self.DropDownMenu.installEventFilter(self) 
-        
+
     def fillDropDownMenu(self):
         '''Re-populates the DropDownMenu'''
         self.DropDownMenu.clear()
@@ -135,24 +135,24 @@ class SettingsWindow(QDialog):
     def initFontrgba(self):
         '''Initializes font rgba sliders and adds them to form'''
          #adding fontrgba slider
-        fontrgbSlidersBox = QHBoxLayout()
+        self.fontrgbSlidersBox = QHBoxLayout()
 
         # Styling Red Slider 
         self.fontRedSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
-        fontrgbSlidersBox.addLayout(self.fontRedSliderBox)
+        self.fontrgbSlidersBox.addLayout(self.fontRedSliderBox)
         self.fontRedSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("red"))
         
         # Styling for Green Slider
         self.fontGreenSliderBox = self.generateSliderBox(0, 255, self.updateSliderIndicators)
-        fontrgbSlidersBox.addLayout(self.fontGreenSliderBox)
+        self.fontrgbSlidersBox.addLayout(self.fontGreenSliderBox)
         self.fontGreenSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("green"))
 
         # Styling for blue slider
         self.fontBlueSliderBox = self.generateSliderBox(0, 255, self.updateSliderIndicators)
-        fontrgbSlidersBox.addLayout(self.fontBlueSliderBox)
+        self.fontrgbSlidersBox.addLayout(self.fontBlueSliderBox)
         self.fontBlueSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("rgb(0, 0, 255)"))
 
-        self.layout.addRow("Colour:",fontrgbSlidersBox)
+        self.layout.addRow("Colour:",self.fontrgbSlidersBox)
         # add the font opacity slider
         self.fontOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)
         self.fontOpacityBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("black"))
@@ -251,7 +251,7 @@ class SettingsWindow(QDialog):
         else:
             self.saveButton.setText("Save and Exit")
             self.saveQuit = True
-     
+
     def saveQuitOff(self):
         '''Disables the save and quit for use whenever anything else is clicked'''
         self.saveQuit = False

@@ -51,7 +51,6 @@ class MicrophoneThread(QThread):
                     if not recognizer.AcceptWaveform(data):
                         partialResultDict = json.loads(recognizer.PartialResult())
                         if not partialResultDict.get("partial", "") == "":
-                            print(partialResultDict["partial"])
                             self.window.setSubtitleText(partialResultDict["partial"])
                 
         except KeyboardInterrupt:
