@@ -152,6 +152,7 @@ class SettingsWindow(QDialog):
         self.fontrgbSlidersBox.addLayout(self.fontBlueSliderBox)
         self.fontBlueSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("rgb(0, 0, 255)"))
 
+
         self.layout.addRow("Colour:",self.fontrgbSlidersBox)
         # add the font opacity slider
         self.fontOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)

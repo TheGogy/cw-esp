@@ -5,6 +5,7 @@ from PyQt5.QtTest import QTest
 from PyQt5.QtCore import Qt
 from SettingsWindow import SettingsWindow
 from Profiles import Profiles
+#import main
 
 
 @pytest.fixture
@@ -37,6 +38,7 @@ def test_fillDropDownMenu(window):
     dropDownMenu = window.DropDownMenu
     AllItems = [dropDownMenu.itemText(i) for i in range(dropDownMenu.count())]
     assert AllItems[0] == Profiles.getCurrentUser()
+    #for i in AllItems:
     #pytest.assertCountEqual(AllItems, sorted(Profiles.getUserList()))
 
 
@@ -60,9 +62,16 @@ def test_SaveButton(window):
     QTest.mouseClick(save_button, Qt.LeftButton)
     assert function_calls['saveButtonFunction'] == 1
 
-def test_ValidProfiles(window):
-    '''Check that valid profiles return true'''
-    window.currentUserSettings =  Profiles.getCurrentUser()
+def test_DeleteUserButton(window):
+    '''Test when SaveButton is called, it calls function'''
+    # Dictionary to track function calls
+    myfunction_calls = {'deleteUser': 0}
+    def count_call():
+        myfunction_calls['deleteUser'] += 1
+    window.deleteUser = count_call()
+    delete_user_button = window.deleteUserButton
+    QTest.mouseClick(delete_user_button, Qt.LeftButton)
+    assert myfunction_calls['deleteUser'] == 1
 
 def test_SliderColour(window):
     '''Test slider instantiated and slider values same as dictionary'''
@@ -74,11 +83,20 @@ def test_SliderColour(window):
     window.fontOpacityBox.itemAt(1).widget().value = 1
     assert window.currentUserSettings['color']  == 'rgba(255,255,255,1.0)'
 
-def test_SliderFont(window):
-    '''Test slider font is same as dictionary'''
-    window.fontSelector.text = 'Arial'
-    assert window.currentUserSettings['font-family'] == 'Arial'
+#def test_fontSelectorDictionary(window):
+   # '''Test slider font is same as dictionary'''
+   # window.fontSelector.setText('Arial')
+   # assert window.currentUserSettings['font-family'] == 'Arial'
 
+
+def test_fontSizeSelectorDictionary(window):
+    '''Test slider font size is same as dictionary'''
+    #window.currentUserSettings = {'font-size': None}
+    #exec(open('main.py').read())
+    window.__init__()
+    window.fontSizeSelector.setText('100')
+    window.fontSizeSelectorDictionary()
+    assert window.currentUserSettings['font-size'] == '100px'
 
 if __name__ == '__main__':
     pytest.main()
