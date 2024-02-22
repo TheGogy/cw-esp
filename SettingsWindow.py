@@ -1,12 +1,9 @@
-from pathlib import Path
-from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout,QVBoxLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
+from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout
 from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt,QRunnable,pyqtSlot,QThreadPool
-from PyQt5.QtGui import QFontDatabase,QDoubleValidator
 import sys
-import re
 from Profiles import Profiles
 from ProfileSettings import ProfileSettings
-from InstallSettings import InstallSettings 
+from InstallSettings import InstallSettings,InstallWorker 
 
 class Communicate(QObject):
     closed = pyqtSignal(str) 
@@ -28,7 +25,7 @@ class SettingsWindow(QDialog):
         self.layout.addLayout(self.RightColumnLayout,9)
         self.initLeftColumnLayout()
         self.communicate = Communicate()
-        self.threadpool = QThreadPool()
+        self.installWorker = InstallWorker()
 
     def initLeftColumnLayout(self):
         self.leftColumnExpanded = False
@@ -59,13 +56,19 @@ class SettingsWindow(QDialog):
  
     def initInstallSettings(self):
         self.deleteLayout(self.RightColumnLayout)
-        self.RightColumnLayout = InstallSettings(self.threadpool)
-        self.layout.addLayout(self.RightColumnLayout,9)
+        self.RightColumnLayout = InstallSettings(self.installWorker)
+        if self.leftColumnExpanded:
+            self.layout.addLayout(self.RightColumnLayout,3)
+        else:
+            self.layout.addLayout(self.RightColumnLayout,9)
 
     def initProfileSttings(self):
         self.deleteLayout(self.RightColumnLayout)
         self.RightColumnLayout = ProfileSettings()
-        self.layout.addLayout(self.RightColumnLayout,9)
+        if self.leftColumnExpanded:
+            self.layout.addLayout(self.RightColumnLayout,3)
+        else:
+            self.layout.addLayout(self.RightColumnLayout,9)
 
     def deleteLayout(self, layout):
         for i in reversed(range(layout.count())):
@@ -81,8 +84,7 @@ class SettingsWindow(QDialog):
         layout.deleteLater()
 
     def closeEvent(self,event):
-        print("Test")
-        self.threadpool.clear()
+        self.installWorker.terminate()
         event.accept()
 
 
