@@ -104,16 +104,20 @@ class SubtitleWindow(QMainWindow):
         self.label.setGeometry(0,0,self.width(),self.height())
         self.update()
         
-    def setSubtitleText(self, text):
+    def setSubtitleText(self, text, window_width=None):
         '''
         updates subtitles to ensure they do not run of the screen\n
         needs updating to accomdate multiple lines of text
         '''
+        # Hacky workaround for when window is hidden 
+        # and seems to have infinite width
+        if window_width is None:
+            window_width = self.width()
         if self.label.text() == "[Subtitles]":
             pass
         size = QFontMetrics(self.label.font())
         text_split = text.split(" ")
-        while size.width(text) > self.width() and len(text_split) > 1: #removes the oldest word until it fits
+        while size.width(text) > window_width and len(text_split) > 1: #removes the oldest word until it fits
             text_split = text.split(" ")
             text_split = text_split[1:]
             text = " ".join(text_split)
