@@ -5,6 +5,7 @@ from pathlib import Path
 import requests
 import yaml
 import os
+import shutil
 import re
 class Profiles:
     ################ Database Queries ################
@@ -180,5 +181,12 @@ class Profiles:
         else:
             return None
 
+    def deleteModel(modelName: str): 
+        profiles = Profiles.getUserProfiles()
+        modelsFolder = f"{profiles['DefaultPath']}/Models"
+        profiles['installedModels'].remove(modelName)
+        profiles['CurrentModel'] = None
+        Profiles.saveProfilesFile(profiles)
+        shutil.rmtree(f"{modelsFolder}/{modelName}")
 if __name__ == '__main__':
     Profiles.generateProfilesFile()

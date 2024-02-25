@@ -10,6 +10,7 @@ from Profiles import Profiles
 class InstallWorkerSignals(QObject):
     finished = pyqtSignal()
     began = pyqtSignal()
+    interrupted = pyqtSignal()
 
 class InstallWorker(QThread):
     def __init__(self, *args,**kwargs):
@@ -26,35 +27,67 @@ class InstallWorker(QThread):
         self.signals.finished.emit()
 
     def terminate(self):
-        if os.path.exists("Models/temp.zip"):
-            os.remove("Models/temp.zip") 
         super().terminate()
+        if os.path.exists("Models/temp.zip"):
+            os.remove("Models/temp.zip")
+        self.signals.interrupted.emit()
+        print("hello")
 
 class InstallSettings(QFormLayout):
     def __init__(self,installWorker):
         super().__init__()
         self.installWorker = installWorker
+        self.initDropdownMenu()
+        self.initButtons()
+
+    def initDropdownMenu(self):
         installedModels = Profiles.getInstalledModels()
         availableModels = Profiles.getAvailableModels()
         self.modelSelector = QComboBox()
         for model in sorted(availableModels):
            self.modelSelector.addItem(model) 
+        self.modelSelector.activated.connect(self.updateButtonText)
         self.addRow(self.modelSelector)
-        if self.installWorker.isRunning():
-            self.installButton = QPushButton("Installing")
-        else:
-            self.installButton = QPushButton("Install")
+
+    def initButtons(self):
+        self.installButton = QPushButton("")
+        self.deleteButton = QPushButton("")
         self.installButton.clicked.connect(self.installFunction)
-        self.addRow(self.installButton)
+        self.deleteButton.clicked.connect(self.deleteButtonFunction)
+        buttonLayout = QHBoxLayout()
+        buttonLayout.addWidget(self.deleteButton,2)
+        buttonLayout.addStretch(6)
+        buttonLayout.addWidget(self.installButton,2)
+        self.updateButtonText()
+        self.addRow(buttonLayout)
 
     def installFunction(self):
         self.installWorker.modelName = self.modelSelector.currentText()
-        self.installWorker.signals.began.connect(self.installStarted)
-        self.installWorker.signals.finished.connect(self.installCompleted)
+        self.installWorker.signals.began.connect(self.updateButtonText)
+        self.installWorker.signals.finished.connect(self.updateButtonText)
+        self.installWorker.signals.interrupted.connect(self.updateButtonText)
         self.installWorker.start()
 
-    def installStarted(self):
-        self.installButton.setText("Installing")
+    def deleteButtonFunction(self):
+        if self.installWorker.isRunning():
+            self.installWorker.terminate()
+        elif self.modelSelector.currentText() in Profiles.getInstalledModels():   
+            Profiles.deleteModel(self.modelSelector.currentText())
 
-    def installCompleted(self):
-        self.installButton.setText("Installed")
+    def updateButtonText(self):
+        installedModels = Profiles.getInstalledModels()
+        if self.installWorker.isRunning():
+            self.deleteButton.setText("Cancel")
+            self.installButton.setText("Installing")
+            return
+        if self.modelSelector.currentText() in installedModels:
+            self.deleteButton.setText("Delete")
+            self.installButton.setText("Installed")
+            return
+        if self.modelSelector.currentText() not in installedModels:
+            self.deleteButton.setText("Delete")
+            self.installButton.setText("Install")
+            return
+
+
+
