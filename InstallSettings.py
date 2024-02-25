@@ -22,6 +22,7 @@ class InstallWorker(QThread):
 
     @pyqtSlot()
     def run(self):
+        print("hello")
         self.signals.began.emit()
         Profiles.installModel(self.modelName)
         self.signals.finished.emit()
@@ -31,19 +32,31 @@ class InstallWorker(QThread):
         if os.path.exists("Models/temp.zip"):
             os.remove("Models/temp.zip")
         self.signals.interrupted.emit()
-        print("hello")
 
 class InstallSettings(QFormLayout):
     def __init__(self,installWorker):
         super().__init__()
-        self.installWorker = installWorker
+        self.initInstallWorker(installWorker)
         self.initDropdownMenu()
         self.initButtons()
+
+    def initInstallWorker(self,installWorker):
+        self.installWorker = installWorker
+        self.installWorker.signals.began.connect(self.updateButtonText)
+        self.installWorker.signals.finished.connect(self.updateButtonText)
+        self.installWorker.signals.interrupted.connect(self.updateButtonText)
 
     def initDropdownMenu(self):
         installedModels = Profiles.getInstalledModels()
         availableModels = Profiles.getAvailableModels()
+        currentModel = Profiles.getCurrentModel()
         self.modelSelector = QComboBox()
+        if self.installWorker.isRunning():
+            availableModels.remove(self.installWorker.modelName)
+            self.modelSelector.addItem(self.installWorker.modelName)
+        elif currentModel in availableModels:
+            availableModels.remove(currentModel)
+            self.modelSelector.addItem(currentModel)
         for model in sorted(availableModels):
            self.modelSelector.addItem(model) 
         self.modelSelector.activated.connect(self.updateButtonText)
@@ -65,9 +78,6 @@ class InstallSettings(QFormLayout):
         if self.modelSelector.currentText() in Profiles.getInstalledModels():
             return
         self.installWorker.modelName = self.modelSelector.currentText()
-        self.installWorker.signals.began.connect(self.updateButtonText)
-        self.installWorker.signals.finished.connect(self.updateButtonText)
-        self.installWorker.signals.interrupted.connect(self.updateButtonText)
         self.installWorker.start()
 
     def deleteButtonFunction(self):

@@ -156,7 +156,8 @@ class Profiles:
 
     def getInstalledModels():
         return list(Profiles.getUserProfiles()['installedModels'])
-
+    def getCurrentModel():
+        return Profiles.getUserProfiles()['CurrentModel']
     def installModel(modelName):
         try:
             modelUrl = Profiles.getModelUrls()[modelName]
