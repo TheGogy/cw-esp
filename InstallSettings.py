@@ -62,6 +62,8 @@ class InstallSettings(QFormLayout):
         self.addRow(buttonLayout)
 
     def installFunction(self):
+        if self.modelSelector.currentText() in Profiles.getInstalledModels():
+            return
         self.installWorker.modelName = self.modelSelector.currentText()
         self.installWorker.signals.began.connect(self.updateButtonText)
         self.installWorker.signals.finished.connect(self.updateButtonText)
