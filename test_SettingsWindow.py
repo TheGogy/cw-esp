@@ -9,15 +9,9 @@ from Profiles import Profiles
 
 
 @pytest.fixture
-def app():
-    '''Create QApplication to test'''
-    test_app = QApplication([])
-    yield test_app
-    test_app.quit()
-
-@pytest.fixture
-def window(app):
+def window():
     '''Create instance of SettingsWindow'''
+    app = QApplication([]) 
     test_window = SettingsWindow()
     yield test_window
     test_window.close()
@@ -36,10 +30,15 @@ def test_DropDownMenu(window):
 def test_fillDropDownMenu(window):
     '''Test ddmenu filled with correct users'''
     dropDownMenu = window.DropDownMenu
+    currentUser = Profiles.getCurrentUser()
+    assert currentUser == None
     AllItems = [dropDownMenu.itemText(i) for i in range(dropDownMenu.count())]
+    profiles = sorted(Profiles.getUserList())
+    currentUser = Profiles.getCurrentUser()
+    profiles.remove(currentUser)
     assert AllItems[0] == Profiles.getCurrentUser()
-    #for i in AllItems:
-    #pytest.assertCountEqual(AllItems, sorted(Profiles.getUserList()))
+    for x in range(len(profiles)):
+        assert AllItems[x + 1] = profiles[x]
 
 
 def test_ButtonInit(window):
@@ -83,16 +82,9 @@ def test_SliderColour(window):
     window.fontOpacityBox.itemAt(1).widget().value = 1
     assert window.currentUserSettings['color']  == 'rgba(255,255,255,1.0)'
 
-#def test_fontSelectorDictionary(window):
-   # '''Test slider font is same as dictionary'''
-   # window.fontSelector.setText('Arial')
-   # assert window.currentUserSettings['font-family'] == 'Arial'
-
 
 def test_fontSizeSelectorDictionary(window):
     '''Test slider font size is same as dictionary'''
-    #window.currentUserSettings = {'font-size': None}
-    #exec(open('main.py').read())
     window.__init__()
     window.fontSizeSelector.setText('100')
     window.fontSizeSelectorDictionary()
