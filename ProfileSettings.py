@@ -31,7 +31,6 @@ class ProfileSettings(QFormLayout):
         self.initFontSizeSelector()
         self.buttonInit()
         self.resetUserSettings()
-        self.setStyleSheet("color: white;") 
 
     def initUserDropdownMenu(self):
         '''Creates the user DropDownMenu, adds it to form layout and connects it to the required functions'''
