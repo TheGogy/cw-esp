@@ -1,10 +1,12 @@
 from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout
 from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt,QRunnable,pyqtSlot, QFile, QTextStream
+
 import sys
 from pathlib import Path
 from Profiles import Profiles
 from ProfileSettings import ProfileSettings
 from InstallSettings import InstallSettings,InstallWorker 
+
 
 class Communicate(QObject):
     closed = pyqtSignal(str) 
@@ -52,6 +54,7 @@ class SettingsWindow(QDialog):
             self.layout.setStretch(1,3)
             self.modelsButton.setText("Models")
             self.profilesButton.setText("Profiles")
+
         else:
             self.layout.setStretch(1,9)
             self.modelsButton.setText("M")
