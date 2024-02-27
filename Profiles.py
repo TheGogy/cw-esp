@@ -80,6 +80,7 @@ class Profiles:
         userSettings['color'] = "rgba(255,255,255,1)"
         userSettings['font-family'] = None
         userSettings['font-size'] = None
+        userSettings['background-color'] = "rgba(0,0,0,0.2)"
         return userSettings
 
     def saveUserProfile(user: str,currentUserSettings: dict):
