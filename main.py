@@ -7,13 +7,21 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread
 import json
 from SubtitleWindow import SubtitleWindow
-from pathlib import Path
+from Profiles import Profiles
+from SettingsWindow import SettingsWindow
 '''This script processes audio input from the microphone and displays the transcribed text.'''
 
 
 class MicrophoneThread(QThread):
     def __init__(self):
         super().__init__()
+        self.modelPath = Profiles.getCurrentModelPath()
+        if self.modelPath is None:
+            settings = SettingsWindow()
+            settings.exec_()
+        self.modelPath = Profiles.getCurrentModelPath()
+        if self.modelPath is None:
+            sys.exit()
         self.window = SubtitleWindow()
         self.window.show()
     def run(self):
@@ -33,8 +41,7 @@ class MicrophoneThread(QThread):
             q.put(bytes(indata))
 
         # build the model and recognizer objects.
-        modelPath = str(Path(__file__).resolve().parent) +  "/models/vosk-model-small-en-us-0.15"
-        model = Model(modelPath)
+        model = Model(self.modelPath)
         recognizer = KaldiRecognizer(model, samplerate)
         recognizer.SetWords(False)
 
@@ -51,7 +58,6 @@ class MicrophoneThread(QThread):
                     if not recognizer.AcceptWaveform(data):
                         partialResultDict = json.loads(recognizer.PartialResult())
                         if not partialResultDict.get("partial", "") == "":
-                            print(partialResultDict["partial"])
                             self.window.setSubtitleText(partialResultDict["partial"])
                 
         except KeyboardInterrupt:
