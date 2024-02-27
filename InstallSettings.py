@@ -14,7 +14,6 @@ class InstallWorkerSignals(QObject):
 class InstallWorker(QThread):
     def __init__(self):
         super().__init__()
-        self.kwargs = kwargs
         self.signals = InstallWorkerSignals()
         self.modelName = None
 
