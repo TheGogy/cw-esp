@@ -12,7 +12,7 @@ class InstallWorkerSignals(QObject):
     interrupted = pyqtSignal()
 
 class InstallWorker(QThread):
-    def __init__(self, *args,**kwargs):
+    def __init__(self):
         super().__init__()
         self.args = args
         self.kwargs = kwargs
