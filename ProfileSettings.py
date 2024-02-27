@@ -270,6 +270,9 @@ class ProfileSettings(QFormLayout):
         return sliderBox
 
     def generate_slider_style(self, color):
+    '''
+    Returns a string containing the QSlider CSS
+    '''
         return f"""
             QSlider::groove:horizontal {{
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
