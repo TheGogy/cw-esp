@@ -1,6 +1,6 @@
 *venv*/
 Models/*model*
-User/*.css
+Users/*.css
 __pycache__
 test.py
 Profiles.yml

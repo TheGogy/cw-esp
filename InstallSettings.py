@@ -22,7 +22,6 @@ class InstallWorker(QThread):
 
     @pyqtSlot()
     def run(self):
-        print("hello")
         self.signals.began.emit()
         Profiles.installModel(self.modelName)
         self.signals.finished.emit()
@@ -85,6 +84,7 @@ class InstallSettings(QFormLayout):
             self.installWorker.terminate()
         elif self.modelSelector.currentText() in Profiles.getInstalledModels():   
             Profiles.deleteModel(self.modelSelector.currentText())
+        self.updateButtonText()
 
     def updateButtonText(self):
         installedModels = Profiles.getInstalledModels()

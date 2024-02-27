@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout
-from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt,QRunnable,pyqtSlot,QThreadPool
+from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt,QRunnable,pyqtSlot, QFile, QTextStream
 import sys
+from pathlib import Path
 from Profiles import Profiles
 from ProfileSettings import ProfileSettings
 from InstallSettings import InstallSettings,InstallWorker 
@@ -26,6 +27,9 @@ class SettingsWindow(QDialog):
         self.initLeftColumnLayout()
         self.communicate = Communicate()
         self.installWorker = InstallWorker()
+        self.cssPath = Path(__file__).parent / "Styles/css_file.qss"
+        self.loadStylesheet(self.cssPath)
+
 
     def initLeftColumnLayout(self):
         self.leftColumnExpanded = False
@@ -86,6 +90,20 @@ class SettingsWindow(QDialog):
                 widget.setParent(None)
                 widget.deleteLater()
         layout.deleteLater()
+
+    def loadStylesheet(self, filename):
+        '''Opening and Reading Stylesheet'''
+        style_file = QFile(str(filename))
+        if not style_file.open(QFile.ReadOnly | QFile.Text):
+            print("error - can't open css_file :", filename)
+            return
+        else:
+            print("opened successfully:", filename)
+            
+        stream = QTextStream(style_file)
+        stylesheet_content = stream.readAll()
+        self.setStyleSheet(stylesheet_content)
+
 
     def closeEvent(self,event):
         self.installWorker.terminate()
