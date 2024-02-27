@@ -47,7 +47,7 @@ class InstallSettings(QFormLayout):
         availableModels = Profiles.getAvailableModels()
         currentModel = Profiles.getCurrentModel()
         self.modelSelector = QComboBox()
-        if self.installWorker.isRunning():
+        if self.installWorker.isRunning(): 
             availableModels.remove(self.installWorker.modelName)
             self.modelSelector.addItem(self.installWorker.modelName)
         elif currentModel in availableModels:
@@ -97,6 +97,8 @@ class InstallSettings(QFormLayout):
             self.deleteButton.setText("Delete")
             self.installButton.setText("Install")
             return
+
+
 
 
 

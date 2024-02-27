@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout,QCompleter
 from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt,QRunnable,pyqtSlot, QFile, QTextStream
 
 import sys
@@ -29,7 +29,7 @@ class SettingsWindow(QDialog):
         self.initLeftColumnLayout()
         self.communicate = Communicate()
         self.installWorker = InstallWorker()
-        self.cssPath = Path(__file__).parent / "Styles/css_file.qss"
+        self.cssPath = Path(__file__).parent / "Styles/CssFile.qss"
         self.loadStylesheet(self.cssPath)
 
 
