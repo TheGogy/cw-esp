@@ -36,7 +36,7 @@ class SettingsWindow(QDialog):
         self.leftColumnLayout.addRow(self.collapseButton)
         self.profilesButton = QPushButton("P",self)
         self.profilesButton.setMinimumWidth(1)
-        self.profilesButton.clicked.connect(self.initProfileSttings)
+        self.profilesButton.clicked.connect(self.initProfileSettings)
         self.leftColumnLayout.addRow(self.profilesButton)
         self.modelsButton = QPushButton("M",self)
         self.modelsButton.setMinimumWidth(1)
@@ -55,6 +55,8 @@ class SettingsWindow(QDialog):
         self.leftColumnExpanded = not self.leftColumnExpanded
  
     def initInstallSettings(self):
+        if isinstance(self.RightColumnLayout,InstallSettings):
+            return
         self.deleteLayout(self.RightColumnLayout)
         self.RightColumnLayout = InstallSettings(self.installWorker)
         if self.leftColumnExpanded:
@@ -62,7 +64,9 @@ class SettingsWindow(QDialog):
         else:
             self.layout.addLayout(self.RightColumnLayout,9)
 
-    def initProfileSttings(self):
+    def initProfileSettings(self):
+        if isinstance(self.RightColumnLayout,ProfileSettings):
+            return
         self.deleteLayout(self.RightColumnLayout)
         self.RightColumnLayout = ProfileSettings()
         if self.leftColumnExpanded:
