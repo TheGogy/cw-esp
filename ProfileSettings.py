@@ -29,6 +29,7 @@ class ProfileSettings(QFormLayout):
         self.initFontSelector()
         self.initFontSizeSelector()
         self.initBackgroundrgba()
+        self.initBorderRadius()
         self.buttonInit()
         self.resetUserSettings()
 
@@ -222,6 +223,21 @@ class ProfileSettings(QFormLayout):
         self.backgroundOpacityBox.itemAt(1).widget().setValue(int(float(rgbaValues[3]) * 100))
         self.backgroundOpacityBox.itemAt(0).widget().setText(rgbaValues[3])
 
+    def initBorderRadius(self):
+        self.borderRadiusSliderBox = self.generateSliderBox(0,25,self.updateBorderRadiusIndicator)
+        self.borderRadiusSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("rgb(0, 69, 255)"))
+        self.addRow("Border Radius:",self.borderRadiusSliderBox)
+
+    def updateBorderRadiusIndicator(self):
+        self.borderRadiusSliderBox.itemAt(0).widget().setText(str(self.borderRadiusSliderBox.itemAt(1).widget().value()))
+        self.borderRadiusDictionary()
+
+    def borderRadiusDictionary(self):
+        self.currentUserSettings['border-radius'] = str(self.borderRadiusSliderBox.itemAt(1).widget().value()) + "px"
+
+    def setBorderRadiusSlider(self):
+        value = self.currentUserSettings['border-radius'][:-2]
+        self.borderRadiusSliderBox.itemAt(0).widget().setText(str(value))
 
     ################ Deals with buttons ################
 
@@ -301,7 +317,10 @@ class ProfileSettings(QFormLayout):
         self.currentUserSettings = Profiles.getUserSettings(self.getOriginalUsername())
         #Rgba font slider reset
         self.setFontRgbaSliders()
+
         self.setBackgroundRgbaSliders()
+
+        self.setBorderRadiusSlider()
         #font reset
         if self.currentUserSettings['font-size'] is not None:
             self.fontSizeSelector.setText(re.search(r'\d+[.]?\d*',self.currentUserSettings['font-size']).group())
@@ -355,7 +374,7 @@ class ProfileSettings(QFormLayout):
             }}
         """
 
- 
+    
     
     ################ Window Wide Events ################
 

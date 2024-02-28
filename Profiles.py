@@ -81,6 +81,7 @@ class Profiles:
         userSettings['font-family'] = None
         userSettings['font-size'] = None
         userSettings['background-color'] = "rgba(0,0,0,0.2)"
+        userSettings['border-radius'] = "0px"
         return userSettings
 
     def saveUserProfile(user: str,currentUserSettings: dict):
