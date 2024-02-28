@@ -12,6 +12,12 @@ class Profiles:
     ################ Database Queries ################
 
     ###PUBLIC###
+    def getAppDirectory():
+        if hasattr(sys,'_MEIPASS'):
+            return os.path.dirname(sys.executable)
+        else:
+            return str(Path(__file__).resolve().parent)
+
     def getCurrentUserCSS():
         with open(Profiles.getUserPath(Profiles.getCurrentUser()), "r") as file:
             return "".join(file.readlines())
@@ -41,6 +47,9 @@ class Profiles:
                     userSettings[entry[0]] = entry[1][:-1]
         return userSettings
 
+    def getDefaultPath():
+        return Profiles.getUserProfiles()["DefaultPath"]
+
     ###PRIVATE###
 
     def getUserPath(user = None):
@@ -48,7 +57,7 @@ class Profiles:
         return f"{defaultPath}/Users/{user}.css"
 
     def getUserProfiles():
-        appDirectory =  os.path.dirname(sys.executable)
+        appDirectory =  Profiles.getAppDirectory()
         profilesPath = f"{appDirectory}/Profiles.yml"
         if not Path(profilesPath).exists():
             Profiles.generateProfilesFile()
@@ -66,7 +75,7 @@ class Profiles:
     ###PUBLIC###
 
     def saveProfilesFile(userProfiles):
-        appDirectory = os.path.dirname(sys.executable)
+        appDirectory = Profiles.getAppDirectory()
         with open(f"{appDirectory}/Profiles.yml", 'w') as file:
             yaml.dump(userProfiles, file)
     
@@ -111,7 +120,7 @@ class Profiles:
     DefaultPath: default path new users will be saved to
     '''
     def generateProfilesFile():
-        defaultPath = os.path.dirname(sys.executable) 
+        defaultPath = Profiles.getAppDirectory() 
         data = {
             'Current': None,
             'Users': set(),
@@ -160,16 +169,18 @@ class Profiles:
         return list(Profiles.getUserProfiles()['installedModels'])
     def getCurrentModel():
         return Profiles.getUserProfiles()['CurrentModel']
+
     def installModel(modelName):
         try:
             modelUrl = Profiles.getModelUrls()[modelName]
         except KeyError:
             raise ValueError("Model not available.")
-        filename = "Models/temp.zip"
+        defaultPath = Profiles.getDefaultPath()
+        filename = f"{defaultPath}/Models/temp.zip"
         urlretrieve(modelUrl,filename)
-        with ZipFile("Models/temp.zip", "r") as zObject:
+        with ZipFile(f"{defaultPath}/Models/temp.zip", "r") as zObject:
             zObject.extractall("Models")
-        os.remove("Models/temp.zip")
+        os.remove(f"{defaultPath}/Models/temp.zip")
         profiles = Profiles.getUserProfiles()
         profiles['CurrentModel'] = modelName
         profiles['installedModels'].add(modelName)
@@ -191,5 +202,6 @@ class Profiles:
         profiles['CurrentModel'] = None
         Profiles.saveProfilesFile(profiles)
         shutil.rmtree(f"{modelsFolder}/{modelName}")
+
 if __name__ == '__main__':
     Profiles.generateProfilesFile()
