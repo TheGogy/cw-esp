@@ -42,7 +42,6 @@ class InstallSettings(QFormLayout):
     def initDropdownMenu(self):
         # installedModels = Profiles.getInstalledModels()
         availableModels = Profiles.getAvailableModels()
-        print(availableModels)
         currentModel = Profiles.getCurrentModel()
         self.modelSelector = QComboBox()
         if self.installWorker.isRunning():
