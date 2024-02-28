@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 import requests
 import yaml
+import sys
 import os
 import shutil
 import re
@@ -11,7 +12,6 @@ class Profiles:
     ################ Database Queries ################
 
     ###PUBLIC###
-
     def getCurrentUserCSS():
         with open(Profiles.getUserPath(Profiles.getCurrentUser()), "r") as file:
             return "".join(file.readlines())
@@ -48,7 +48,7 @@ class Profiles:
         return f"{defaultPath}/Users/{user}.css"
 
     def getUserProfiles():
-        appDirectory =  Path(str(Path(__file__).resolve().parent))
+        appDirectory =  os.path.dirname(sys.executable)
         profilesPath = f"{appDirectory}/Profiles.yml"
         if not Path(profilesPath).exists():
             Profiles.generateProfilesFile()
@@ -66,7 +66,7 @@ class Profiles:
     ###PUBLIC###
 
     def saveProfilesFile(userProfiles):
-        appDirectory = str(Path(__file__).resolve().parent)
+        appDirectory = os.path.dirname(sys.executable)
         with open(f"{appDirectory}/Profiles.yml", 'w') as file:
             yaml.dump(userProfiles, file)
     
@@ -111,7 +111,7 @@ class Profiles:
     DefaultPath: default path new users will be saved to
     '''
     def generateProfilesFile():
-        defaultPath = str(Path(__file__).resolve().parent) 
+        defaultPath = os.path.dirname(sys.executable) 
         data = {
             'Current': None,
             'Users': set(),
