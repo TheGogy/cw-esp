@@ -19,4 +19,4 @@ Our goal is to create a universally accessible tool that benefits all users.
 pyinstaller main.py SettingsWindow.py Profiles.py SubtitleWindow.py --noconsole --collect-binaries vosk --onefile --icon=Cabbage.ico
 ```
 
-# Quick User Guide #
+<img src="ExImage.png" height="500" width="8000">
