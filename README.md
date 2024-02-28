@@ -1,5 +1,5 @@
 # Universal Subtitle Program 
-_A tool that benefits all_
+_A tool that benefits all._
 
 ## What does it do? ##
 
