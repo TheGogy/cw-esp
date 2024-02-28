@@ -9,4 +9,3 @@ elif [ "$1" = "shallow" ]; then
 else
 	echo "Usage: $0 <deep | shallow>"
 fi
-
