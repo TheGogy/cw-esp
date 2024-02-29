@@ -1,7 +1,7 @@
 # Universal Subtitle Program 
 A simple tool that allows users to generate subtitles from spoken language.
 
-![screenshot](ExImage.jpg?raw=true "Screenshot of application")
+![screenshot](ExImage.png?raw=true "Screenshot of application")
 
 - [Overview](#overview)
 - [Compiling from source](#compiling)
