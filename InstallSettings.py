@@ -1,9 +1,6 @@
-from pathlib import Path
-from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout,QVBoxLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
-from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt,QRunnable,pyqtSlot,QThread
-import sys
+from PyQt5.QtWidgets import QPushButton,QFormLayout,QHBoxLayout,QComboBox
+from PyQt5.QtCore import  pyqtSignal, QObject, pyqtSlot, QThread
 import os
-import re
 from Profiles import Profiles
 
 class InstallWorkerSignals(QObject):
@@ -43,8 +40,9 @@ class InstallSettings(QFormLayout):
         self.installWorker.signals.interrupted.connect(self.updateButtonText)
 
     def initDropdownMenu(self):
-        installedModels = Profiles.getInstalledModels()
+        # installedModels = Profiles.getInstalledModels()
         availableModels = Profiles.getAvailableModels()
+        print(availableModels)
         currentModel = Profiles.getCurrentModel()
         self.modelSelector = QComboBox()
         if self.installWorker.isRunning(): 
@@ -53,8 +51,8 @@ class InstallSettings(QFormLayout):
         elif currentModel in availableModels:
             availableModels.remove(currentModel)
             self.modelSelector.addItem(currentModel)
-        for model in sorted(availableModels):
-           self.modelSelector.addItem(model) 
+        for model in sorted(availableModels.values()):
+            self.modelSelector.addItem(f"[{model[1]}] {model[0][47:-4]}") 
         self.modelSelector.activated.connect(self.updateButtonText)
         self.addRow(self.modelSelector)
 

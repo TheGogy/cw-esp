@@ -12,8 +12,8 @@ class Communicate(QObject):
     closed = pyqtSignal(str) 
 
 class SettingsWindow(QDialog):
-   
-   ################ Initialization ################
+
+    ################ Initialization ################
 
     def __init__(self):
         super().__init__()
@@ -60,7 +60,7 @@ class SettingsWindow(QDialog):
             self.modelsButton.setText("M")
             self.profilesButton.setText("P")
         self.leftColumnExpanded = not self.leftColumnExpanded
- 
+
     def initInstallSettings(self):
         if isinstance(self.RightColumnLayout,InstallSettings):
             return
@@ -102,7 +102,7 @@ class SettingsWindow(QDialog):
             return
         else:
             print("opened successfully:", filename)
-            
+
         stream = QTextStream(style_file)
         stylesheet_content = stream.readAll()
         self.setStyleSheet(stylesheet_content)

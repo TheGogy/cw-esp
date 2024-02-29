@@ -2,11 +2,41 @@ from zipfile import ZipFile
 from urllib.request import urlretrieve
 from bs4 import BeautifulSoup
 from pathlib import Path
-import requests
 import yaml
 import os
 import shutil
 import re
+import asyncio
+import aiohttp
+
+def getSize(num):
+    for unit in ("", "KB", "MB"):
+        if num < 1000.0:
+            return f'{num:3.1f} {unit}'
+        num /= 1000.0
+    return f'{num:.1f} GB'
+
+async def fetch(session, url):
+    async with session.head(url) as response:
+        return response.headers.get('Content-Length', 0)
+
+async def getDownloadLinks(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            content = await response.text()
+            soup = BeautifulSoup(content, 'html.parser')
+            links = soup.find_all('a', href=re.compile('\S*vosk-model\S*.zip'))
+            tasks = []
+            for link in links:
+                tasks.append(fetch(session, link.get('href')))
+            sizes = await asyncio.gather(*tasks)
+            return links, sizes
+
+async def getDownloadLinksAsync(availableModels: dict, url: str):
+    links,sizes = await getDownloadLinks(url)
+    for link, size in zip(links, sizes):
+        availableModels[link.get('href')[47:-4]] = [link.get("href"), getSize(int(size))]
+
 class Profiles:
     ################ Database Queries ################
 
@@ -15,7 +45,7 @@ class Profiles:
     def getCurrentUserCSS():
         with open(Profiles.getUserPath(Profiles.getCurrentUser()), "r") as file:
             return "".join(file.readlines())
-        
+
     def getUserList():
         return list(Profiles.getUserProfiles()['Users'])
 
@@ -58,18 +88,18 @@ class Profiles:
         except (FileNotFoundError, yaml.YAMLError):
             Profiles.generateProfilesFile()
         with open(profilesPath, "r") as profilesFile:
-                profiles = yaml.safe_load(profilesFile)
+            profiles = yaml.safe_load(profilesFile)
         return profiles
 
     ################ Data Editor  ################
-    
+
     ###PUBLIC###
 
     def saveProfilesFile(userProfiles):
         appDirectory = str(Path(__file__).resolve().parent)
         with open(f"{appDirectory}/Profiles.yml", 'w') as file:
             yaml.dump(userProfiles, file)
-    
+
     def addUser(user):
         userProfiles = Profiles.getUserProfiles()
         userProfiles['Users'].add(user)
@@ -138,29 +168,25 @@ class Profiles:
     def generateAvailableModels():
         availableModels = {}
         modelsUrl = "https://alphacephei.com/vosk/models"
-        response = requests.get(modelsUrl)
-        soup = BeautifulSoup(response.text,"html.parser")
-        links = soup.select('a')
-        for link in links:
-            href = link.get('href')
-            if re.match('\S*vosk-model\S*.zip',href):
-                availableModels[link.get_text()] = href
+        asyncio.run(getDownloadLinksAsync(availableModels, modelsUrl))
         return availableModels
- 
- 
+
+
     def getModelUrls():
         return Profiles.getUserProfiles()['availableModels']
 
     def getAvailableModels():
-        return list(Profiles.getUserProfiles()['availableModels'].keys())
+        return Profiles.getUserProfiles()['availableModels']
 
     def getInstalledModels():
         return list(Profiles.getUserProfiles()['installedModels'])
+
     def getCurrentModel():
         return Profiles.getUserProfiles()['CurrentModel']
+
     def installModel(modelName):
         try:
-            modelUrl = Profiles.getModelUrls()[modelName]
+            modelUrl = Profiles.getModelUrls()[modelName][0]
         except KeyError:
             raise ValueError("Model not available.")
         filename = "Models/temp.zip"
