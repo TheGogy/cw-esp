@@ -1,22 +1,30 @@
 # Universal Subtitle Program 
-_A tool that benefits all._
+A simple tool that allows users to generate subtitles from spoken language.
 
-## What does it do? ##
+![screenshot](ExImage.jpg?raw=true "Screenshot of application")
 
-Hello! Our system aims to help address some of the challenges faced by neurodiverse individuals. Video content has become increasingly prevalent on online platforms. However, many individuals, particularly those with ASD or ADHD, struggle to engage with video content due to sensory sensitivities, attention difficulties, or social communication challenges.
+- [Overview](#overview)
+- [Compiling from source](#compiling)
+- [Features](#features)
 
-## How? ##
+## Overview
 We aim to bridge the gap by providing customisable subtitles for all types of video content. The system works to accurately interpret audio and generate subtitles on the user's device, aiming to support full comprehension of video content for individuals with diverse needs.
 
-## Our Motivation ##
-While some of our team have intrinsic motivations stemming from a neurodiverse background, we recognise the benefits such a system would have provided during university studies. 
-
-Our goal is to create a universally accessible tool that benefits all users.
-
-# Lets get started! - Installation 
-### Compile Command
-```
+## Compiling from source
+We recommend compiling from source for speed, efficiency and download size.
+After cloning the repository, you can generate an exacutable by running:
+```sh
 pyinstaller main.py SettingsWindow.py Profiles.py SubtitleWindow.py --noconsole --collect-all vosk --onefile --icon=Cabbage.ico
 ```
 
-<img src="ExImage.png" height="650" width="4000">
+## Features
+- [x] Detect audio from microphone and render subtitles
+- [x] Full customisability, including:
+  - [x] - Colours (text + background)
+  - [x] - Fonts + sizes
+  - [x] - Rounding
+- [x] - Fully built-in model downloader + selecter
+- [x] - Support for multiple profiles 
+  
+- [ ] - Transcribe audio from files
+- [ ] - Render subtitles from computer audio
