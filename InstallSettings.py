@@ -22,8 +22,8 @@ class InstallWorker(QThread):
 
     def terminate(self):
         super().terminate()
-        if os.path.exists("Models/temp.zip"):
-            os.remove("Models/temp.zip")
+        if os.path.exists(f"{Profiles.getAppDirectory()}/Models/temp.zip"):
+            os.remove(f"{Profiles.getAppDirectory()}/Models/temp.zip"})
         self.signals.interrupted.emit()
 
 class InstallSettings(QFormLayout):
@@ -57,8 +57,8 @@ class InstallSettings(QFormLayout):
         self.addRow(self.modelSelector)
 
     def initButtons(self):
-        self.installButton = QPushButton("")
-        self.deleteButton = QPushButton("")
+        self.installButton = QPushButton()
+        self.deleteButton = QPushButton()
         self.installButton.clicked.connect(self.installFunction)
         self.deleteButton.clicked.connect(self.deleteButtonFunction)
         buttonLayout = QHBoxLayout()
@@ -70,6 +70,7 @@ class InstallSettings(QFormLayout):
 
     def installFunction(self):
         if self.modelSelector.currentText() in Profiles.getInstalledModels():
+            Profiles.selectModel(self.modelSelector.currentText())
             return
         self.installWorker.modelName = self.modelSelector.currentText()
         self.installWorker.start()
@@ -89,12 +90,10 @@ class InstallSettings(QFormLayout):
             return
         if self.modelSelector.currentText() in installedModels:
             self.deleteButton.setText("Delete")
-            self.installButton.setText("Installed")
+            self.installButton.setText("Select")
             return
         if self.modelSelector.currentText() not in installedModels:
             self.deleteButton.setText("Delete")
             self.installButton.setText("Install")
             return
-
-
 
