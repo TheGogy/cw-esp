@@ -3,16 +3,19 @@ QComboBox {
     border-radius: 3px;
     padding: 1px 18px 1px 3px;
     min-width: 6em;
+    color: #ffffff;
 }
 
 /* Drop Down Button */
 QComboBox, QComboBox::drop-down:editable {
     background: #D8DEE9;    
+    color: #ffffff;
 }
 
 /* Sets the colour of the options displayed once clicked on dropdown menu */
 QComboBox QAbstractItemView {
     background-color: #4C566A; 
+    color: #ffffff;
 }
 
 /* Top Text Box */
