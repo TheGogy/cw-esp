@@ -27,7 +27,7 @@ class SettingsWindow(QDialog):
         self.initLeftColumnLayout()
         self.communicate = Communicate()
         self.installWorker = InstallWorker()
-        self.cssPath = f"{Profiles.getAppDirectory()}/Styles/css_file.qss"
+        self.cssPath = Profiles.getAppDirectory() / "Styles" / "CssFile.qss"
         self.loadStylesheet(self.cssPath)
 
 
