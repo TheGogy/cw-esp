@@ -10,11 +10,11 @@ import re
 from Profiles import Profiles
 
 class ProfileSettings(QFormLayout):
-    
+
     ################ Constants ################
 
     NEW_USER_MESSAGE = "Create New User"
-  
+
     ################ Signals ################
 
     closed = pyqtSignal()
@@ -41,7 +41,7 @@ class ProfileSettings(QFormLayout):
         self.DropDownMenu.activated.connect(self.changedUser)
         self.addWidget(self.DropDownMenu)
         self.DropDownMenu.installEventFilter(self) 
-        
+
     def fillDropDownMenu(self):
         '''Re-populates the DropDownMenu'''
         self.DropDownMenu.clear()
@@ -60,16 +60,16 @@ class ProfileSettings(QFormLayout):
         '''Updates entire settings menu if user is changed'''
         self.updateText()
         self.resetUserSettings()
- 
+
     def updateText(self):
         '''if create new user is selected enter editable mode'''
         self.DropDownMenu.setEditable(False)
         if self.DropDownMenu.currentText() == ProfileSettings.NEW_USER_MESSAGE:
             self.DropDownMenu.setEditable(True)
             self.DropDownMenu.setCurrentText("")
-    
+
     ################ Error Message ################
-    
+
     def initErrorMessage(self):
         '''Initializes error Message (not valid settings)'''
         self.errorMessage = QLabel()
@@ -276,12 +276,12 @@ class ProfileSettings(QFormLayout):
         else:
             self.saveButton.setText("Save and Exit")
             self.saveQuit = True
-     
+
     def saveQuitOff(self):
         '''Disables the save and quit for use whenever anything else is clicked'''
         self.saveQuit = False
         self.saveButton.setText("Save")
-    
+
     def validProfile(self):
         '''Checks validity of the Profile so that it doesnt save a no functioning file'''
         self.errorMessage.setText("")
@@ -302,7 +302,7 @@ class ProfileSettings(QFormLayout):
             self.errorMessage.setText("Please enter a font size")
             return False
         return True
-    
+
     def deleteUser(self):
         '''If there is a user to delete it deletes updating the file system accordingly''' 
         Profiles.deleteUser(self.getOriginalUsername())
@@ -311,7 +311,7 @@ class ProfileSettings(QFormLayout):
 
 
     ################ Utitily Functions ################
-    
+
     def getEditedUsername(self):
         return self.DropDownMenu.currentText()
 
@@ -319,15 +319,13 @@ class ProfileSettings(QFormLayout):
         if self.DropDownMenu.itemText(self.DropDownMenu.currentIndex()) == ProfileSettings.NEW_USER_MESSAGE:
             return None
         return self.DropDownMenu.itemText(self.DropDownMenu.currentIndex())
-    
+
     def resetUserSettings(self):
         '''Sets the values of the sliders to the current user settings'''
         self.currentUserSettings = Profiles.getUserSettings(self.getOriginalUsername())
         #Rgba font slider reset
         self.setFontRgbaSliders()
-
         self.setBackgroundRgbaSliders()
-
         self.setBorderRadiusSlider()
         #font reset
         if self.currentUserSettings['font-size'] is not None:
