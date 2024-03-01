@@ -1,8 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout
 from PyQt5.QtCore import  pyqtSignal, QObject, QTextStream, QFile
 
-import sys
-from pathlib import Path
 from Profiles import Profiles
 from ProfileSettings import ProfileSettings
 from InstallSettings import InstallSettings,InstallWorker 
@@ -29,7 +27,7 @@ class SettingsWindow(QDialog):
         self.initLeftColumnLayout()
         self.communicate = Communicate()
         self.installWorker = InstallWorker()
-        self.cssPath = Path(__file__).parent / "Styles/css_file.qss"
+        self.cssPath = f"{Profiles.getAppDirectory()}/Styles/css_file.qss"
         self.loadStylesheet(self.cssPath)
 
 
