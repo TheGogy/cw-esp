@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QPushButton,QFormLayout,QHBoxLayout,QComboBox
 from PyQt5.QtCore import  pyqtSignal, QObject, pyqtSlot, QThread
 import os
+import re
 from Profiles import Profiles
 
 class InstallWorkerSignals(QObject):
@@ -22,8 +23,8 @@ class InstallWorker(QThread):
 
     def terminate(self):
         super().terminate()
-        if os.path.exists(f"{Profiles.getAppDirectory()}/Models/temp.zip"):
-            os.remove(f"{Profiles.getAppDirectory()}/Models/temp.zip"})
+        if os.path.exists(Profiles.getAppDirectory() / "Models"/ "temp.zip"):
+            os.remove(Profiles.getAppDirectory()/ "Models" / "temp.zip")
         self.signals.interrupted.emit()
 
 class InstallSettings(QFormLayout):
@@ -40,19 +41,17 @@ class InstallSettings(QFormLayout):
         self.installWorker.signals.interrupted.connect(self.updateButtonText)
 
     def initDropdownMenu(self):
-        # installedModels = Profiles.getInstalledModels()
         availableModels = Profiles.getAvailableModels()
-        print(availableModels)
         currentModel = Profiles.getCurrentModel()
         self.modelSelector = QComboBox()
         if self.installWorker.isRunning():
-            availableModels.remove(self.installWorker.modelName)
+            availableModels.pop(self.installWorker.modelName)
             self.modelSelector.addItem(self.installWorker.modelName)
         elif currentModel in availableModels:
-            availableModels.remove(currentModel)
-            self.modelSelector.addItem(currentModel)
-        for model in sorted(availableModels.values()):
-            self.modelSelector.addItem(f"[{model[1]}] {model[0][47:-4]}") 
+            availableModels.pop(currentModel)
+            self.modelSelector.addItem(f"[{availableModels[currentModel][1]}] {currentModel}")
+        for model in sorted(availableModels.keys()):
+            self.modelSelector.addItem(f"[{availableModels[model][1]}] {model}") 
         self.modelSelector.activated.connect(self.updateButtonText)
         self.addRow(self.modelSelector)
 
@@ -69,17 +68,17 @@ class InstallSettings(QFormLayout):
         self.addRow(buttonLayout)
 
     def installFunction(self):
-        if self.modelSelector.currentText() in Profiles.getInstalledModels():
-            Profiles.selectModel(self.modelSelector.currentText())
+        if self.getCurrentModelText() in Profiles.getInstalledModels():
+            Profiles.selectModel(self.getCurrentModelText())
             return
-        self.installWorker.modelName = self.modelSelector.currentText()
+        self.installWorker.modelName = self.getCurrentModelText()
         self.installWorker.start()
 
     def deleteButtonFunction(self):
         if self.installWorker.isRunning():
             self.installWorker.terminate()
-        elif self.modelSelector.currentText() in Profiles.getInstalledModels():   
-            Profiles.deleteModel(self.modelSelector.currentText())
+        elif self.getCurrentModelText() in Profiles.getInstalledModels():   
+            Profiles.deleteModel(self.getCurrentModelText())
         self.updateButtonText()
 
     def updateButtonText(self):
@@ -88,12 +87,14 @@ class InstallSettings(QFormLayout):
             self.deleteButton.setText("Cancel")
             self.installButton.setText("Installing")
             return
-        if self.modelSelector.currentText() in installedModels:
+        if self.getCurrentModelText() in installedModels:
             self.deleteButton.setText("Delete")
             self.installButton.setText("Select")
             return
-        if self.modelSelector.currentText() not in installedModels:
+        if self.getCurrentModelText() not in installedModels:
             self.deleteButton.setText("Delete")
             self.installButton.setText("Install")
             return
 
+    def getCurrentModelText(self):
+        return re.findall(r'\[.*\] (.*)',self.modelSelector.currentText())[0]
