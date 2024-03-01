@@ -9,6 +9,7 @@ class SubtitleWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         #recieves userProfiles if unsuccessful then quits the application
+        self.label = QLabel(self)
         currentUser = Profiles.getCurrentUser()
         if currentUser is None:
             self.openSettingsMenu()
@@ -26,7 +27,7 @@ class SubtitleWindow(QMainWindow):
         self.oldPosition = None
         self.translucentMode = True
         # set label which contains the subtitles
-        self.label = QLabel(self)
+        
         self.label.setText("[Subtitles]")
         self.label.setStyleSheet(self.css)
         self.label.setGeometry(0, 0, self.width(), self.height())
