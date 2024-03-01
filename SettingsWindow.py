@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout
-from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt,QRunnable,pyqtSlot, QFile, QTextStream
+from PyQt5.QtCore import  pyqtSignal, QObject, QTextStream, QFile
 
 from Profiles import Profiles
 from ProfileSettings import ProfileSettings
@@ -10,8 +10,8 @@ class Communicate(QObject):
     closed = pyqtSignal(str) 
 
 class SettingsWindow(QDialog):
-   
-   ################ Initialization ################
+
+    ################ Initialization ################
 
     def __init__(self):
         super().__init__()
@@ -58,7 +58,7 @@ class SettingsWindow(QDialog):
             self.modelsButton.setText("M")
             self.profilesButton.setText("P")
         self.leftColumnExpanded = not self.leftColumnExpanded
- 
+
     def initInstallSettings(self):
         if isinstance(self.RightColumnLayout,InstallSettings):
             return
@@ -100,7 +100,7 @@ class SettingsWindow(QDialog):
             return
         else:
             print("opened successfully:", filename)
-            
+
         stream = QTextStream(style_file)
         stylesheet_content = stream.readAll()
         self.setStyleSheet(stylesheet_content)
