@@ -44,11 +44,10 @@ class InstallSettings(QFormLayout):
         availableModels = Profiles.getAvailableModels()
         currentModel = Profiles.getCurrentModel()
         self.modelSelector = QComboBox()
+        self.modelSelector.setDuplicatesEnabled(False)
         if self.installWorker.isRunning():
-            availableModels.pop(self.installWorker.modelName)
-            self.modelSelector.addItem(self.installWorker.modelName)
+            self.modelSelector.addItem(f"[{availableModels[self.installWorker.modelName][1]}] {self.installWorker.modelName}")
         elif currentModel in availableModels:
-            availableModels.pop(currentModel)
             self.modelSelector.addItem(f"[{availableModels[currentModel][1]}] {currentModel}")
         for model in sorted(availableModels.keys()):
             self.modelSelector.addItem(f"[{availableModels[model][1]}] {model}") 
