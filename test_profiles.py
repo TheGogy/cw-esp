@@ -1,9 +1,7 @@
-# Import modules
 from Profiles import Profiles
 from pathlib import Path
 import pytest
 import yaml
-import unittest
 
 # Set up test environment
 RUNTIME_DIR = Path(__file__).parent
@@ -63,137 +61,123 @@ Users: !!set
 )
 
 
-# Profiles test class
-class test_Profiles(unittest.TestCase):
-
-    @pytest.mark.order(1)
-    # Test Profiles.getCurrentUserCSS()
-    def test_getCurrentUserCSS(self):
-        test_user_1_cssData = """
+@pytest.mark.order(1)
+def test_getCurrentUserCSS():
+    test_user_1_cssData = """
 QLabel {
 color: rgba(195,78,92,0.85);
 font-family: Fira Code;
 font-size: 20px;
 }
 """
-        self.assertEqual(Profiles.getCurrentUserCSS(), test_user_1_cssData)
+    assert Profiles.getCurrentUserCSS() == test_user_1_cssData
 
-    @pytest.mark.order(2)
-    # Test Profiles.getUserList()
-    def test_getUserList(self):
-        self.assertEqual(sorted(Profiles.getUserList()), ["test_user_1", "test_user_2", "test_user_3", "test_user_delete"])
+@pytest.mark.order(2)
+def test_getUserList():
+    assert sorted(Profiles.getUserList()) == ["test_user_1", "test_user_2", "test_user_3", "test_user_delete"]
 
-    @pytest.mark.order(3)
-    # Test Profiles.getCurrentUser()
-    def test_getCurrentUser(self):
-        self.assertEqual(Profiles.getCurrentUser(), "test_user_1")
+@pytest.mark.order(3)
+def test_getCurrentUser():
+    assert Profiles.getCurrentUser() == "test_user_1"
 
-    # Test Profiles.getCurrentUserSettings()
-    @pytest.mark.order(4)
-    def test_getCurrentUserSettings(self):
-        test_user_1_cssData = """
+@pytest.mark.order(4)
+def test_getCurrentUserSettings():
+    test_user_1_cssData = """
 QLabel {
 color: rgba(195,78,92,0.85);
 font-family: Fira Code;
 font-size: 20px;
 }
 """
-        self.assertEqual(Profiles.getCurrentUserCSS(), test_user_1_cssData)
+    assert Profiles.getCurrentUserCSS() == test_user_1_cssData
 
-    @pytest.mark.order(5)
-    # Test Profiles.userExists(user)
-    def test_userExists(self):
-        self.assertEqual(Profiles.userExists("test_user_1"), True)
-        self.assertEqual(Profiles.userExists("test_user_2"), True)
-        self.assertEqual(Profiles.userExists("fake_user"), False)
+@pytest.mark.order(5)
+def test_userExists():
+    assert Profiles.userExists("test_user_1") == True
+    assert Profiles.userExists("test_user_2") == True
+    assert Profiles.userExists("fake_user") == False
 
-    # Test Profiles.getUserSettings(user)
-    @pytest.mark.order(6)
-    def test_getUserSettings(self):
-        test_user_settings = {
-            "color": "rgba(255,255,255,1)",
-            "font-family": "Arial",
-            "font-size": "14px"
-        }
-        file_name = "test_user_get_settings"
-        Profiles.saveUserProfile(file_name, test_user_settings)
-        retrieved_settings = Profiles.getUserSettings(file_name)
+@pytest.mark.order(6)
+def test_getUserSettings():
+    test_user_settings = {
+        "color": "rgba(255,255,255,1)",
+        "font-family": "Arial",
+        "font-size": "14px"
+    }
+    file_name = "test_user_get_settings"
+    Profiles.saveUserProfile(file_name, test_user_settings)
+    retrieved_settings = Profiles.getUserSettings(file_name)
 
-        self.assertEqual(retrieved_settings, test_user_settings)
+    assert retrieved_settings == test_user_settings
 
-    # Test Profiles.getUserPath(user)
-    @pytest.mark.order(7)
-    def test_getUserPath(self):
-        self.assertEqual(str(RUNTIME_DIR / "Users/test_user_1.css"), Profiles.getUserPath("test_user_1"))
-        self.assertEqual(str(RUNTIME_DIR / "Users/test_user_2.css"), Profiles.getUserPath("test_user_2"))
+@pytest.mark.order(7)
+def test_getUserPath():
+    assert str(RUNTIME_DIR / "Users/test_user_1.css") == Profiles.getUserPath("test_user_1")
+    assert str(RUNTIME_DIR / "Users/test_user_2.css") == Profiles.getUserPath("test_user_2")
 
-    # Test Profiles.getUserProfiles()
-    @pytest.mark.order(8)
-    def test_getUserProfiles(self):
-        self.assertEqual({
-            "Current": "test_user_get_settings",
-            "DefaultPath": str(RUNTIME_DIR / "Users"),
-            "Users": {"test_user_1", "test_user_2", "test_user_3", "test_user_delete", "test_user_get_settings"}
-        },
-        Profiles.getUserProfiles())
+@pytest.mark.order(8)
+def test_getUserProfiles():
+    assert Profiles.getUserProfiles() == {
+        "Current": "test_user_get_settings",
+        "DefaultPath": str(RUNTIME_DIR / "Users"),
+        "Users": {"test_user_1", "test_user_2", "test_user_3", "test_user_delete", "test_user_get_settings"}
+    }
 
-    # Test Profiles.generateDefaultSettings()
-    @pytest.mark.order(9)
-    def test_generateDefaultSettings(self):
-        userSettings = {
-            "color": "rgba(255,255,255,1)",
-            "font-family": None,
-            "font-size": None
-        }
-        self.assertEqual(Profiles.generateDefaultSettings(), userSettings)
+@pytest.mark.order(9)
+def test_generateDefaultSettings():
+    userSettings = {
+        "color": "rgba(255,255,255,1)",
+        "font-family": None,
+        "font-size": None
+    }
+    assert Profiles.generateDefaultSettings() == userSettings
 
-    @pytest.mark.order(10)
-    def test_deleteUser(self):
-        Profiles.deleteUser("test_user_delete")
-        self.assertFalse(Profiles.userExists("test_user_delete"))
-        self.assertFalse("test_user_delete" in list(Profiles.getUserProfiles()['Users']))
+@pytest.mark.order(10)
+def test_deleteUser():
+    Profiles.deleteUser("test_user_delete")
+    assert not Profiles.userExists("test_user_delete")
+    assert "test_user_delete" not in list(Profiles.getUserProfiles()['Users'])
 
-    # Test Profiles.saveUserProfile(user, currentUserSettings)
-    @pytest.mark.order(11)
-    def test_saveUserProfile(self):
-        newUserSettings = {
-            "color": "rgba(255,255,255,1)",
-            "font-family": "Helvetica",
-            "font-size": '28'
-        }
-        Profiles.saveUserProfile("test_user_3", newUserSettings)
-        userSettings = {}
-        with open(Profiles.getUserPath("test_user_3"), "r") as cssFile:
-            cssLines = cssFile.readlines()[1:-1]
-            for line in cssLines:
-                entry = (line.strip()).split(": ")
-                userSettings[entry[0]] = entry[1][:-1]
+@pytest.mark.order(11)
+def test_saveUserProfile():
+    newUserSettings = {
+        "color": "rgba(255,255,255,1)",
+        "font-family": "Helvetica",
+        "font-size": '28'
+    }
+    Profiles.saveUserProfile("test_user_3", newUserSettings)
+    userSettings = {}
+    with open(Profiles.getUserPath("test_user_3"), "r") as cssFile:
+        cssLines = cssFile.readlines()[1:-1]
+        for line in cssLines:
+            entry = (line.strip()).split(": ")
+            userSettings[entry[0]] = entry[1][:-1]
 
-        self.assertEqual(newUserSettings, userSettings)
+    assert newUserSettings == userSettings
 
-    @pytest.mark.order(12)
-    def test_generateProfilesFile(self):
-        Profiles.generateProfilesFile()
-        self.assertTrue(Path("Profiles.yml").exists())
+@pytest.mark.order(12)
+def test_generateProfilesFile():
+    Profiles.generateProfilesFile()
+    assert Path("Profiles.yml").exists()
 
-    @pytest.mark.order(13)
-    def test_saveProfilesFile(self):
-        test_data = {
-            "Current": "test_user_1",
-            "DefaultPath": "default/path",
-            "Users": {"test_user_1"}
-        }
-        Profiles.saveProfilesFile(test_data)
-        with open("Profiles.yml", "r") as f:
-            saved_data = yaml.safe_load(f)
-        self.assertEqual(test_data, saved_data)
+@pytest.mark.order(13)
+def test_saveProfilesFile():
+    test_data = {
+        "Current": "test_user_1",
+        "DefaultPath": "default/path",
+        "Users": {"test_user_1"}
+    }
+    Profiles.saveProfilesFile(test_data)
+    with open("Profiles.yml", "r") as f:
+        saved_data = yaml.safe_load(f)
+    assert test_data == saved_data
 
-    @pytest.mark.order(14)
-    def test_addUser(self):
-        Profiles.addUser("test_user_3")
-        self.assertTrue(Profiles.userExists("test_user_3"))
+@pytest.mark.order(14)
+def test_addUser():
+    Profiles.addUser("test_user_3")
+    assert Profiles.userExists("test_user_3")
 
-    @pytest.mark.order(15)
-    def test_setCurrentUser(self):
-        Profiles.setCurrentUser("test_user_2")
-        self.assertEqual(Profiles.getCurrentUser(), "test_user_2")
+@pytest.mark.order(15)
+def test_setCurrentUser():
+    Profiles.setCurrentUser("test_user_2")
+    assert Profiles.getCurrentUser() == "test_user_2"
