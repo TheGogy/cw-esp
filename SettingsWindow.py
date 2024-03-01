@@ -112,6 +112,7 @@ class SettingsWindow(QDialog):
 
 
 if __name__ == '__main__':
+    import sys
     app = QApplication(sys.argv)
     window = SettingsWindow()
     window.show()

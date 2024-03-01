@@ -203,5 +203,10 @@ class Profiles:
         Profiles.saveProfilesFile(profiles)
         shutil.rmtree(f"{modelsFolder}/{modelName}")
 
+    def selectModel(modelName: str):
+        profiles = Profiles.getUserProfiles()
+        profiles['CurrentModel'] = modelName
+        Profiles.saveProfilesFile(profiles)
+ 
 if __name__ == '__main__':
     Profiles.generateProfilesFile()
