@@ -2,6 +2,7 @@
 from PyQt5.QtWidgets import QPushButton, QFormLayout,QHBoxLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
 from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent 
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator
+from Styles.SliderStyle import generate_slider_style, generateGradient
 ### General Library imports
 import sys
 import re
@@ -86,22 +87,22 @@ class ProfileSettings(QFormLayout):
         # Styling Red Slider 
         self.fontRedSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontRedSliderBox)
-        self.fontRedSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style(self.generateGradient("white", "red")))
+        self.fontRedSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "red")))
         
         # Styling for Green Slider
         self.fontGreenSliderBox = self.generateSliderBox(0, 255, self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontGreenSliderBox)
-        self.fontGreenSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style(self.generateGradient("white", "green")))
+        self.fontGreenSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "green")))
 
         # Styling for blue slider
         self.fontBlueSliderBox = self.generateSliderBox(0, 255, self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontBlueSliderBox)
-        self.fontBlueSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style(self.generateGradient("white", "blue")))
+        self.fontBlueSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "blue")))
 
         self.addRow("Colour:",fontrgbSlidersBox)
         # add the font opacity slider
         self.fontOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)
-        self.fontOpacityBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style(self.generateGradient("white", "black")))
+        self.fontOpacityBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "black")))
         self.addRow("Font Opacity: ",self.fontOpacityBox)
 
     def updateSliderIndicators(self):
@@ -142,8 +143,15 @@ class ProfileSettings(QFormLayout):
         fontCompleter.setCaseSensitivity(False)
         self.fontSelector = QLineEdit("")
         self.fontSelector.setCompleter(fontCompleter)
+        # CSS for Text Edit 
+        self.fontSelector.setStyleSheet("background-color: #4C566A; color: #ffffff;")
+        # Ensure order is maintained for correct styling. 
         self.fontSelector.textChanged.connect(self.fontSelectorDictionary)
-        self.addRow("Font:" ,self.fontSelector)
+        self.addRow("Font:", self.fontSelector)
+        # CSS for Popup 
+        completerListView = fontCompleter.popup()
+        completerListView.setStyleSheet("background-color: #4C566A; color: #ffffff;")
+
 
     def fontSelectorDictionary(self):
         '''Updates the form selector dictionary'''
@@ -177,22 +185,22 @@ class ProfileSettings(QFormLayout):
         # Styling Red Slider 
         self.backgroundRedSliderBox = self.generateSliderBox(0,255,self.updateBackgroundSliderIndicators)
         backgroundRgbSlidersBox.addLayout(self.backgroundRedSliderBox)
-        self.backgroundRedSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style(self.generateGradient("white", "red")))
+        self.backgroundRedSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "red")))
         
         # Styling for Green Slider
         self.backgroundGreenSliderBox = self.generateSliderBox(0, 255, self.updateBackgroundSliderIndicators)
         backgroundRgbSlidersBox.addLayout(self.backgroundGreenSliderBox)
-        self.backgroundGreenSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style(self.generateGradient("white", "green")))
+        self.backgroundGreenSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "green")))
 
         # Styling for blue slider
         self.backgroundBlueSliderBox = self.generateSliderBox(0, 255, self.updateBackgroundSliderIndicators)
         backgroundRgbSlidersBox.addLayout(self.backgroundBlueSliderBox)
-        self.backgroundBlueSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style(self.generateGradient("white", "blue")))
+        self.backgroundBlueSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "blue")))
 
         self.addRow("Background Colour:",backgroundRgbSlidersBox)
         # add the font opacity slider
         self.backgroundOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)
-        self.backgroundOpacityBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style(self.generateGradient("white", "black")))
+        self.backgroundOpacityBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "black")))
         self.addRow("Background Opacity: ",self.backgroundOpacityBox)
 
     def updateBackgroundSliderIndicators(self):
@@ -225,7 +233,7 @@ class ProfileSettings(QFormLayout):
 
     def initBorderRadius(self):
         self.borderRadiusSliderBox = self.generateSliderBox(0,25,self.updateBorderRadiusIndicator)
-        self.borderRadiusSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("red"))
+        self.borderRadiusSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style("red"))
         self.addRow("Border Radius:",self.borderRadiusSliderBox)
 
     def updateBorderRadiusIndicator(self):
@@ -346,38 +354,6 @@ class ProfileSettings(QFormLayout):
         sliderBox.addWidget(slider)
         slider.valueChanged.connect(function)
         return sliderBox
-
-    def generateGradient(self, start, end):
-        return f"qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {start}, stop:1 {end})"
-
-    def generate_slider_style(self, color):
-        '''Returns a string containing the QSlider CSS'''
-        return f"""
-            QSlider::groove:horizontal {{
-                background: {color};
-                border: 1px solid #D8DEE9;
-                height: 7.5px;
-                margin: 0px;
-                border-radius: 4px;
-            }}
-            QSlider::handle:horizontal {{
-                background: #D8DEE9;
-                border: 1px solid #D8DEE9;
-                width: 4px;
-                height: 4px;
-                margin: -4px 0;
-                border-radius: 2px;
-            }}
-            QSlider::sub-page:horizontal {{
-                background: {color};
-            }}
-            QSlider::add-page:horizontal {{
-                background: #D8DEE9;
-            }}
-        """
-
-    
-    
     ################ Window Wide Events ################
 
     def resizeEvent(self,event):
