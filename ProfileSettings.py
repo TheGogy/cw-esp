@@ -88,7 +88,6 @@ class ProfileSettings(QFormLayout):
         self.fontRedSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontRedSliderBox)
         self.fontRedSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "red")))
-        
         # Styling for Green Slider
         self.fontGreenSliderBox = self.generateSliderBox(0, 255, self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontGreenSliderBox)
@@ -323,10 +322,12 @@ class ProfileSettings(QFormLayout):
     def resetUserSettings(self):
         '''Sets the values of the sliders to the current user settings'''
         self.currentUserSettings = Profiles.getUserSettings(self.getOriginalUsername())
+        
         #Rgba font slider reset
         self.setFontRgbaSliders()
         self.setBackgroundRgbaSliders()
         self.setBorderRadiusSlider()
+        
         #font reset
         if self.currentUserSettings['font-size'] is not None:
             self.fontSizeSelector.setText(re.search(r'\d+[.]?\d*',self.currentUserSettings['font-size']).group())
@@ -352,6 +353,7 @@ class ProfileSettings(QFormLayout):
         sliderBox.addWidget(slider)
         slider.valueChanged.connect(function)
         return sliderBox
+      
     ################ Window Wide Events ################
 
     def resizeEvent(self,event):
