@@ -139,7 +139,7 @@ def testInitButtonsFunctionsDelete(installWorker):
 def testInstallFunction(installWorker):
     installSettings = InstallSettings(installWorker)
     installSettings.installFunction()
-    assert installWorker.modelName == installSettings.modelSelector.getCurrentModelText()
+    assert installWorker.modelName == installSettings.getCurrentModelText()
 
 @pytest.mark.order(12)
 def testDeleteButtonFunction(installWorker):
