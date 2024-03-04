@@ -60,6 +60,7 @@ class MicrophoneThread(QThread):
                             self.window.setSubtitleText(partialResultDict["partial"])
                     else:
                         recognizer.Reset()
+
                 
         except KeyboardInterrupt:
             print('===> Finished Recording')

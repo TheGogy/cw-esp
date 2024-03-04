@@ -327,7 +327,7 @@ class ProfileSettings(QFormLayout):
         self.setFontRgbaSliders()
         self.setBackgroundRgbaSliders()
         self.setBorderRadiusSlider()
-        
+
         #font reset
         if self.currentUserSettings['font-size'] is not None:
             self.fontSizeSelector.setText(re.search(r'\d+[.]?\d*',self.currentUserSettings['font-size']).group())
@@ -353,7 +353,6 @@ class ProfileSettings(QFormLayout):
         sliderBox.addWidget(slider)
         slider.valueChanged.connect(function)
         return sliderBox
-      
     ################ Window Wide Events ################
 
     def resizeEvent(self,event):
