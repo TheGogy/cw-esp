@@ -1,6 +1,9 @@
 sounddevice==0.4.6
 pyinstaller==6.4.0
 vosk==0.3.44
+pytest==8.1.0
+pytest-qt==4.4.0
+pytest-order==1.2.0
 srt==3.5.3
 pyyaml==6.0.1
 PyQt5==5.15.10
