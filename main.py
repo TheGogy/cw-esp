@@ -40,7 +40,7 @@ class MicrophoneThread(QThread):
             q.put(bytes(indata))
 
         # build the model and recognizer objects.
-        model = Model(self.modelPath)
+        model = Model(str(self.modelPath))
         recognizer = KaldiRecognizer(model, samplerate)
         recognizer.SetWords(False)
 
@@ -58,10 +58,9 @@ class MicrophoneThread(QThread):
                         partialResultDict = json.loads(recognizer.PartialResult())
                         if not partialResultDict.get("partial", "") == "":
                             self.window.setSubtitleText(partialResultDict["partial"])
+                    else:
+                        recognizer.Reset()
 
-                        else:
-                            recognizer.Reset()
-                            self.window.setSubtitleText("")
                 
         except KeyboardInterrupt:
             print('===> Finished Recording')

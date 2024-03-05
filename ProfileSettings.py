@@ -2,6 +2,7 @@
 from PyQt5.QtWidgets import QPushButton, QFormLayout,QHBoxLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
 from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent 
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator
+from Styles.SliderStyle import generate_slider_style, generateGradient
 ### General Library imports
 import sys
 import re
@@ -28,6 +29,8 @@ class ProfileSettings(QFormLayout):
         self.initFontrgba()
         self.initFontSelector()
         self.initFontSizeSelector()
+        self.initBackgroundrgba()
+        self.initBorderRadius()
         self.buttonInit()
         self.resetUserSettings()
 
@@ -84,22 +87,21 @@ class ProfileSettings(QFormLayout):
         # Styling Red Slider 
         self.fontRedSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontRedSliderBox)
-        self.fontRedSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("red"))
-
+        self.fontRedSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "red")))
         # Styling for Green Slider
         self.fontGreenSliderBox = self.generateSliderBox(0, 255, self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontGreenSliderBox)
-        self.fontGreenSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("green"))
+        self.fontGreenSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "green")))
 
         # Styling for blue slider
         self.fontBlueSliderBox = self.generateSliderBox(0, 255, self.updateSliderIndicators)
         fontrgbSlidersBox.addLayout(self.fontBlueSliderBox)
-        self.fontBlueSliderBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("rgb(0, 0, 255)"))
+        self.fontBlueSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "blue")))
 
         self.addRow("Colour:",fontrgbSlidersBox)
         # add the font opacity slider
         self.fontOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)
-        self.fontOpacityBox.itemAt(1).widget().setStyleSheet(self.generate_slider_style("black"))
+        self.fontOpacityBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "black")))
         self.addRow("Font Opacity: ",self.fontOpacityBox)
 
     def updateSliderIndicators(self):
@@ -140,8 +142,15 @@ class ProfileSettings(QFormLayout):
         fontCompleter.setCaseSensitivity(False)
         self.fontSelector = QLineEdit("")
         self.fontSelector.setCompleter(fontCompleter)
+        # CSS for Text Edit 
+        self.fontSelector.setStyleSheet("background-color: #4C566A; color: #ffffff;")
+        # Ensure order is maintained for correct styling. 
         self.fontSelector.textChanged.connect(self.fontSelectorDictionary)
-        self.addRow("Font:" ,self.fontSelector)
+        self.addRow("Font:", self.fontSelector)
+        # CSS for Popup 
+        completerListView = fontCompleter.popup()
+        completerListView.setStyleSheet("background-color: #4C566A; color: #ffffff;")
+
 
     def fontSelectorDictionary(self):
         '''Updates the form selector dictionary'''
@@ -164,6 +173,78 @@ class ProfileSettings(QFormLayout):
         else:
             self.currentUserSettings['font-size'] = self.fontSizeSelector.text() + "px"    
         self.saveQuitOff()
+
+    ################ Background Colour ################
+
+    def initBackgroundrgba(self):
+        '''Initializes font rgba sliders and adds them to form'''
+        #adding fontrgba slider
+        backgroundRgbSlidersBox = QHBoxLayout()
+
+        # Styling Red Slider 
+        self.backgroundRedSliderBox = self.generateSliderBox(0,255,self.updateBackgroundSliderIndicators)
+        backgroundRgbSlidersBox.addLayout(self.backgroundRedSliderBox)
+        self.backgroundRedSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "red")))
+        
+        # Styling for Green Slider
+        self.backgroundGreenSliderBox = self.generateSliderBox(0, 255, self.updateBackgroundSliderIndicators)
+        backgroundRgbSlidersBox.addLayout(self.backgroundGreenSliderBox)
+        self.backgroundGreenSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "green")))
+
+        # Styling for blue slider
+        self.backgroundBlueSliderBox = self.generateSliderBox(0, 255, self.updateBackgroundSliderIndicators)
+        backgroundRgbSlidersBox.addLayout(self.backgroundBlueSliderBox)
+        self.backgroundBlueSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "blue")))
+
+        self.addRow("Background Colour:",backgroundRgbSlidersBox)
+        # add the font opacity slider
+        self.backgroundOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)
+        self.backgroundOpacityBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "black")))
+        self.addRow("Background Opacity: ",self.backgroundOpacityBox)
+
+    def updateBackgroundSliderIndicators(self):
+        '''Updates the slider indicator and dictionary when a slider is moved'''
+        r = self.backgroundRedSliderBox.itemAt(1).widget().value()
+        g = self.backgroundGreenSliderBox.itemAt(1).widget().value()
+        b = self.backgroundBlueSliderBox.itemAt(1).widget().value()
+        a = self.backgroundOpacityBox.itemAt(1).widget().value() / 100
+
+        self.backgroundrgbaDictionary(f"rgba({r},{g},{b},{a})")
+        self.setBackgroundRgbaSliders()
+        self.saveQuitOff()
+
+    def backgroundrgbaDictionary(self,value: str):
+        '''Updates dictionary'''
+        self.currentUserSettings['background-color']  = value
+        self.saveQuitOff()
+
+    def setBackgroundRgbaSliders(self):
+        '''sets fonts and and indicator to a given rgba value'''
+        rgbaValues = re.findall(r'\d+[.]?\d*',self.currentUserSettings['background-color'])
+        self.backgroundRedSliderBox.itemAt(1).widget().setValue(int(rgbaValues[0]))
+        self.backgroundRedSliderBox.itemAt(0).widget().setText(rgbaValues[0])
+        self.backgroundGreenSliderBox.itemAt(1).widget().setValue(int(rgbaValues[1]))
+        self.backgroundGreenSliderBox.itemAt(0).widget().setText(rgbaValues[1])
+        self.backgroundBlueSliderBox.itemAt(1).widget().setValue(int(rgbaValues[2]))
+        self.backgroundBlueSliderBox.itemAt(0).widget().setText(rgbaValues[2])
+        self.backgroundOpacityBox.itemAt(1).widget().setValue(int(float(rgbaValues[3]) * 100))
+        self.backgroundOpacityBox.itemAt(0).widget().setText(rgbaValues[3])
+
+    def initBorderRadius(self):
+        self.borderRadiusSliderBox = self.generateSliderBox(0,25,self.updateBorderRadiusIndicator)
+        self.borderRadiusSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style("red"))
+        self.addRow("Border Radius:",self.borderRadiusSliderBox)
+
+    def updateBorderRadiusIndicator(self):
+        self.borderRadiusSliderBox.itemAt(0).widget().setText(str(self.borderRadiusSliderBox.itemAt(1).widget().value()))
+        self.borderRadiusDictionary()
+
+    def borderRadiusDictionary(self):
+        self.currentUserSettings['border-radius'] = str(self.borderRadiusSliderBox.itemAt(1).widget().value()) + "px"
+
+    def setBorderRadiusSlider(self):
+        value = self.currentUserSettings['border-radius'][:-2]
+        self.borderRadiusSliderBox.itemAt(0).widget().setText(str(value))
 
     ################ Deals with buttons ################
 
@@ -241,8 +322,12 @@ class ProfileSettings(QFormLayout):
     def resetUserSettings(self):
         '''Sets the values of the sliders to the current user settings'''
         self.currentUserSettings = Profiles.getUserSettings(self.getOriginalUsername())
+        
         #Rgba font slider reset
         self.setFontRgbaSliders()
+        self.setBackgroundRgbaSliders()
+        self.setBorderRadiusSlider()
+
         #font reset
         if self.currentUserSettings['font-size'] is not None:
             self.fontSizeSelector.setText(re.search(r'\d+[.]?\d*',self.currentUserSettings['font-size']).group())
@@ -268,36 +353,6 @@ class ProfileSettings(QFormLayout):
         sliderBox.addWidget(slider)
         slider.valueChanged.connect(function)
         return sliderBox
-
-    def generate_slider_style(self, color):
-        '''Returns a string containing the QSlider CSS'''
-        return f"""
-            QSlider::groove:horizontal {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                            stop:0 white, stop:1 {color});
-                border: 1px solid #D8DEE9;
-                height: 7.5px;
-                margin: 0px;
-                border-radius: 4px;
-            }}
-            QSlider::handle:horizontal {{
-                background: #D8DEE9;
-                border: 1px solid #D8DEE9;
-                width: 4px;
-                height: 4px;
-                margin: -4px 0;
-                border-radius: 2px;
-            }}
-            QSlider::sub-page:horizontal {{
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 white, stop:1 {color});
-            }}
-            QSlider::add-page:horizontal {{
-                background: #D8DEE9;
-            }}
-        """
-
-
-
     ################ Window Wide Events ################
 
     def resizeEvent(self,event):

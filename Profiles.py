@@ -3,6 +3,7 @@ from urllib.request import urlretrieve
 from bs4 import BeautifulSoup
 from pathlib import Path
 import yaml
+import sys
 import os
 import shutil
 import re
@@ -35,12 +36,17 @@ async def getDownloadLinks(url):
 async def getDownloadLinksAsync(availableModels: dict, url: str):
     links,sizes = await getDownloadLinks(url)
     for link, size in zip(links, sizes):
-        availableModels[link.get('href')[47:-4]] = [link.get("href"), getSize(int(size))]
+        availableModels[link.get_text()] = [link.get("href"), getSize(int(size))]
 
 class Profiles:
     ################ Database Queries ################
 
     ###PUBLIC###
+    def getAppDirectory():
+        if hasattr(sys,'_MEIPASS'):
+            return Path(os.path.dirname(sys.executable))
+        else:
+            return Path(__file__).resolve().parent
 
     def getCurrentUserCSS():
         with open(Profiles.getUserPath(Profiles.getCurrentUser()), "r") as file:
@@ -71,15 +77,17 @@ class Profiles:
                     userSettings[entry[0]] = entry[1][:-1]
         return userSettings
 
+    def getDefaultPath():
+        return Path(Profiles.getUserProfiles()["DefaultPath"])
+
     ###PRIVATE###
 
     def getUserPath(user = None):
-        defaultPath = Profiles.getUserProfiles()["DefaultPath"] 
-        return f"{defaultPath}/Users/{user}.css"
+        defaultPath = Path(Profiles.getUserProfiles()["DefaultPath"])
+        return defaultPath / "Users" / f"{user}.css"
 
     def getUserProfiles():
-        appDirectory =  Path(str(Path(__file__).resolve().parent))
-        profilesPath = f"{appDirectory}/Profiles.yml"
+        profilesPath =  Profiles.getAppDirectory() / "Profiles.yml"
         if not Path(profilesPath).exists():
             Profiles.generateProfilesFile()
         try:
@@ -96,8 +104,8 @@ class Profiles:
     ###PUBLIC###
 
     def saveProfilesFile(userProfiles):
-        appDirectory = str(Path(__file__).resolve().parent)
-        with open(f"{appDirectory}/Profiles.yml", 'w') as file:
+        profilesPath = Profiles.getAppDirectory() / "Profiles.yml"
+        with open(profilesPath, 'w') as file:
             yaml.dump(userProfiles, file)
 
     def addUser(user):
@@ -108,8 +116,10 @@ class Profiles:
     def generateDefaultSettings():
         userSettings = {}
         userSettings['color'] = "rgba(255,255,255,1)"
-        userSettings['font-family'] = None
+        userSettings['font-family'] = None 
         userSettings['font-size'] = None
+        userSettings['background-color'] = "rgba(0,0,0,0.2)"
+        userSettings['border-radius'] = "0px"
         return userSettings
 
     def saveUserProfile(user: str,currentUserSettings: dict):
@@ -139,7 +149,7 @@ class Profiles:
     DefaultPath: default path new users will be saved to
     '''
     def generateProfilesFile():
-        defaultPath = str(Path(__file__).resolve().parent) 
+        defaultPath = Profiles.getAppDirectory()
         data = {
             'Current': None,
             'Users': set(),
@@ -148,15 +158,15 @@ class Profiles:
             'installedModels': set(),
             'CurrentModel': None,
         }
-        userPath =  f"{defaultPath}/Users"
+        userPath =  defaultPath / "Users"
         if not os.path.exists(userPath):
             os.mkdir(userPath)
-        data['DefaultPath'] = defaultPath
-        modelPath = f"{defaultPath}/Models"
+        data['DefaultPath'] = str(defaultPath)
+        modelPath = defaultPath / "Models"
         if not os.path.exists(modelPath):
             os.mkdir(modelPath)
         data['availableModels'] = Profiles.generateAvailableModels()
-        profilesPath = f"{defaultPath}/Profiles.yml"
+        profilesPath = defaultPath / "Profiles.yml"
         with open(profilesPath, 'w') as file:
             yaml.dump(data, file, default_flow_style=False)
 
@@ -189,11 +199,12 @@ class Profiles:
             modelUrl = Profiles.getModelUrls()[modelName][0]
         except KeyError:
             raise ValueError("Model not available.")
-        filename = "Models/temp.zip"
+        defaultPath = Profiles.getDefaultPath()
+        filename = defaultPath / "Models" / "temp.zip"
         urlretrieve(modelUrl,filename)
-        with ZipFile("Models/temp.zip", "r") as zObject:
+        with ZipFile(filename, "r") as zObject:
             zObject.extractall("Models")
-        os.remove("Models/temp.zip")
+        os.remove(filename)
         profiles = Profiles.getUserProfiles()
         profiles['CurrentModel'] = modelName
         profiles['installedModels'].add(modelName)
@@ -201,19 +212,25 @@ class Profiles:
 
     def getCurrentModelPath():
         profiles = Profiles.getUserProfiles()
-        defaultPath = profiles["DefaultPath"]
+        defaultPath = Path(profiles["DefaultPath"])
         currentModel = profiles["CurrentModel"]
         if currentModel is not None:
-            return f"{defaultPath}/Models/{currentModel}"
+            return  defaultPath / "Models" / currentModel
         else:
             return None
 
     def deleteModel(modelName: str): 
+        modelsFolder = Profiles.getDefaultPath() / "Models"
         profiles = Profiles.getUserProfiles()
-        modelsFolder = f"{profiles['DefaultPath']}/Models"
         profiles['installedModels'].remove(modelName)
         profiles['CurrentModel'] = None
         Profiles.saveProfilesFile(profiles)
-        shutil.rmtree(f"{modelsFolder}/{modelName}")
+        shutil.rmtree(modelsFolder / modelName)
+
+    def selectModel(modelName: str):
+        profiles = Profiles.getUserProfiles()
+        profiles['CurrentModel'] = modelName
+        Profiles.saveProfilesFile(profiles)
+ 
 if __name__ == '__main__':
     Profiles.generateProfilesFile()
