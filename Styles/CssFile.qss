@@ -4,10 +4,11 @@ QComboBox {
     padding: 1px 18px 1px 3px;
     min-width: 6em;
     color: #ffffff;
+    background: #4C566A;    
 }
 
 /* Drop Down Button */
-QComboBox, QComboBox::drop-down:editable {
+QComboBox::drop-down {
     background: #D8DEE9;    
     color: #ffffff;
 }
@@ -17,14 +18,10 @@ QComboBox QAbstractItemView {
     background-color: #4C566A; 
     color: #ffffff;
 }
-
-/* Top Text Box */
-QComboBox { 
-    background: #4C566A;
-    /* color effects the font colour of the ComboBox */
+QString {
+    background-color: #4C566A; 
     color: #ffffff;
 }
-
 /* Slider */
 QSlider{ 
     background: transparent; 
@@ -38,6 +35,7 @@ QDialog {
 /* Font */
 QLabel {
     color: #D8DEE9; 
+    background: transparent;
 }
 
 /* Text Box - Font and Size */
@@ -45,7 +43,6 @@ QLineEdit{
     background: #4C566A;
     /* color effects the font colour in Font and Text Box */
     color: #ffffff;
-    background-color:#4C566A; 
 }
 
 QLineEdit::drop-down {
