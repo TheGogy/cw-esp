@@ -55,5 +55,6 @@ QLineEdit::drop-down {
 /* Delete and Save */
 QPushButton{
     background: #D8DEE9;
+    color: #2e3440;
 }
 
