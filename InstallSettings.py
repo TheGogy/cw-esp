@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QPushButton,QFormLayout,QHBoxLayout,QComboBox
 from PyQt5.QtCore import  pyqtSignal, QObject, pyqtSlot, QThread
 import os
+import re
 from Profiles import Profiles
 
 class InstallWorkerSignals(QObject):
@@ -41,7 +42,6 @@ class InstallSettings(QFormLayout):
 
     def initDropdownMenu(self):
         availableModels = Profiles.getAvailableModels()
-        print(availableModels)
         currentModel = Profiles.getCurrentModel()
         self.modelSelector = QComboBox()
         self.modelSelector.setDuplicatesEnabled(False)
