@@ -67,7 +67,7 @@ class ProfileSettings(QFormLayout):
         if self.DropDownMenu.currentText() == ProfileSettings.NEW_USER_MESSAGE:
             self.DropDownMenu.setEditable(True)
             self.DropDownMenu.setCurrentText("")
-
+            self.DropDownMenu.setStyleSheet("border: 1px solid #D8DEE9;border-radius: 3px;padding: 1px 18px 1px 3px;min-width: 6em;color: #ffffff;background: #4C566A;")
     ################ Error Message ################
 
     def initErrorMessage(self):

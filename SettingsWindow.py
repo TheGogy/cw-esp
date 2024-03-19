@@ -15,7 +15,7 @@ class SettingsWindow(QDialog):
 
     def __init__(self):
         super().__init__()
-        self.setGeometry(100,100,400,200)
+        self.setGeometry(100,100,600,300)
         self.setWindowTitle("User Selection")
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
@@ -29,7 +29,6 @@ class SettingsWindow(QDialog):
         self.installWorker = InstallWorker()
         self.cssPath = Profiles.getAppDirectory() / "Styles" / "CssFile.qss"
         self.loadStylesheet(self.cssPath)
-
 
     def initLeftColumnLayout(self):
         self.leftColumnExpanded = False
@@ -74,6 +73,7 @@ class SettingsWindow(QDialog):
             return
         self.deleteLayout(self.RightColumnLayout)
         self.RightColumnLayout = ProfileSettings()
+        self.RightColumnLayout.closed.connect(self.close)
         if self.leftColumnExpanded:
             self.layout.addLayout(self.RightColumnLayout,3)
         else:

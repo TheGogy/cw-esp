@@ -33,7 +33,7 @@ class SubtitleWindow(QMainWindow):
     ################ Subtitle text ###############
 
     def initLabel(self):
-        self.label = QLabel("[Subtitles]",self)
+        self.label = QLabel("",self)
         if Profiles.getCurrentUser() is None:
             self.openSettingsMenu()
         self.updateWindowStyling()
