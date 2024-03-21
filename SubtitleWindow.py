@@ -98,7 +98,7 @@ class SubtitleWindow(QMainWindow):
 
     def openSettingsMenu(self):
         self.hide()
-        self.userSelector = SettingsWindow()
+        self.userSelector = SettingsWindow("profile")
         self.userSelector.exec_()
         if Profiles.getCurrentUser() is None:
             sys.exit()
