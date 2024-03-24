@@ -13,20 +13,30 @@ class SettingsWindow(QDialog):
 
     ################ Initialization ################
 
-    def __init__(self):
+    def __init__(self, name=None):
         super().__init__()
         self.setGeometry(100,100,600,300)
         self.setWindowTitle("User Selection")
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
         self.leftColumnLayout = QFormLayout()
-        self.RightColumnLayout = ProfileSettings()
-        self.RightColumnLayout.closed.connect(self.close)
+        self.installWorker = InstallWorker()
+        if name == None:
+            self.RightColumnLayout = ProfileSettings()
+            self.RightColumnLayout.closed.connect(self.close)
+            self.setWindowTitle("Settings Window")
+        if name == "profile":
+            self.RightColumnLayout = ProfileSettings()
+            self.setWindowTitle("Create User.")
+            self.RightColumnLayout.closed.connect(self.close)
+        if name == "model":
+            self.RightColumnLayout = InstallSettings(self.installWorker)
+            self.setWindowTitle("Download a model.")
+
         self.layout.addLayout(self.leftColumnLayout,1)
         self.layout.addLayout(self.RightColumnLayout,9)
         self.initLeftColumnLayout()
         self.communicate = Communicate()
-        self.installWorker = InstallWorker()
         self.cssPath = Profiles.getAppDirectory() / "Styles" / "CssFile.qss"
         self.loadStylesheet(self.cssPath)
 

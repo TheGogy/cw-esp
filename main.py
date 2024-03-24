@@ -16,7 +16,7 @@ class MicrophoneThread(QThread):
         super().__init__()
         self.modelPath = Profiles.getCurrentModelPath()
         if self.modelPath is None:
-            settings = SettingsWindow()
+            settings = SettingsWindow("model")
             settings.exec_()
         self.modelPath = Profiles.getCurrentModelPath()
         if self.modelPath is None:
