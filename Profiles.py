@@ -124,15 +124,19 @@ class Profiles:
 
     def saveUserProfile(user: str,currentUserSettings: dict):
         userProfilePath = Profiles.getUserPath(user)
-        css_string = "QLabel {\n"
-        for element in currentUserSettings.keys():
-            css_string += f"{element}: {currentUserSettings[element]};\n"
-        css_string += "}"
+        cssString = Profiles.convertToCSS(currentUserSettings)
         with open(userProfilePath, 'w') as userFile:
-            userFile.write(css_string)
+            userFile.write(cssString)
         if not Profiles.userExists(user):
             Profiles.addUser(user)
         Profiles.setCurrentUser(user)
+
+    def convertToCSS(userSettings: dict):
+        cssString = "QLabel {\n"
+        for element in userSettings.keys():
+            cssString += f"{element}: {userSettings[element]};\n"
+        cssString += "}"
+        return cssString
 
     def deleteUser(user: str):
         userProfiles = Profiles.getUserProfiles()
