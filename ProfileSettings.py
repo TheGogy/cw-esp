@@ -1,6 +1,6 @@
 ### Pyqt imports
-from PyQt5.QtWidgets import QPushButton, QFormLayout,QHBoxLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
-from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent 
+from PyQt5.QtWidgets import QPushButton,QHBoxLayout, QFormLayout,QGridLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
+from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator
 from Styles.SliderStyle import generate_slider_style, generateGradient
 ### General Library imports
@@ -8,8 +8,7 @@ import sys
 import re
 ### Project Imports
 from Profiles import Profiles
-
-class ProfileSettings(QFormLayout):
+class ProfileSettings(QGridLayout):
 
     ################ Constants ################
 
@@ -18,11 +17,14 @@ class ProfileSettings(QFormLayout):
     ################ Signals ################
 
     closed = pyqtSignal()
+    changed = pyqtSignal()
 
     ################ Initialation ###############
 
     def __init__(self):
         super().__init__()
+        self.formLayout = QFormLayout()
+        self.addLayout(self.formLayout,0,0)
         self.currentUserSettings = Profiles.getCurrentUserSettings()
         self.initUserDropdownMenu()
         self.initErrorMessage()
@@ -33,27 +35,35 @@ class ProfileSettings(QFormLayout):
         self.initBorderRadius()
         self.buttonInit()
         self.resetUserSettings()
+        self.changed.connect(self.changedEvent)
+        self.formatLayoutSizes()
 
+    def formatLayoutSizes(self):
+        self.setColumnStretch(0,1)
+        self.setColumnStretch(1,9)
+        self.setRowStretch(0,9)
+        self.setRowStretch(1,1)
+        self.errorMessage.setFixedSize(self.errorMessage.width(),self.errorMessage.height())
+ 
     def initUserDropdownMenu(self):
         '''Creates the user DropDownMenu, adds it to form layout and connects it to the required functions'''
         self.DropDownMenu = QComboBox()
         self.fillDropDownMenu()
         self.DropDownMenu.activated.connect(self.changedUser)
-        self.addWidget(self.DropDownMenu)
+        self.DropDownMenu.editTextChanged.connect(self.changedEvent)
+        self.addWidget(self.DropDownMenu,1,0)
         self.DropDownMenu.installEventFilter(self) 
 
     def fillDropDownMenu(self):
         '''Re-populates the DropDownMenu'''
         self.DropDownMenu.clear()
-        users = sorted(Profiles.getUserList())
+        users = sorted(Profiles.getUserList()) # Hacky fix because setduplicatesEnabled not working fo reasons
         currentUser = Profiles.getCurrentUser()
         if currentUser is not None:
             self.DropDownMenu.addItem(currentUser)
-            users.remove(currentUser)
-        for user in users:
-            self.DropDownMenu.addItem(user)
+            users.remove(currentUser) 
+        self.DropDownMenu.addItems(users)
         self.DropDownMenu.addItem(ProfileSettings.NEW_USER_MESSAGE)
-        self.DropDownMenu.setEditable(True)
         self.updateText()
 
     def changedUser(self):
@@ -67,42 +77,51 @@ class ProfileSettings(QFormLayout):
         if self.DropDownMenu.currentText() == ProfileSettings.NEW_USER_MESSAGE:
             self.DropDownMenu.setEditable(True)
             self.DropDownMenu.setCurrentText("")
+            self.DropDownMenu.setStyleSheet(Profiles.getStyleSheet())
 
     ################ Error Message ################
 
     def initErrorMessage(self):
         '''Initializes error Message (not valid settings)'''
         self.errorMessage = QLabel()
-        self.errorMessage.setText("")
-        self.errorMessage.setStyleSheet("color: red")
-        self.addWidget(self.errorMessage)
+        self.errorMessage.setAlignment(Qt.AlignBottom)
+        self.errorMessage.setText("Lorem Ipsum Dolor Sit Amet")
+        self.addWidget(self.errorMessage,0,1)
+        self.updatePreview()
+
+    def updatePreview(self):
+        defaultCSS = Profiles.generateDefaultSettings()
+        defaultCSS['color'] = "red"
+        self.errorMessage.setStyleSheet(Profiles.convertToCSS(defaultCSS))
+        if not self.validProfile():
+            return
+        self.errorMessage.setStyleSheet(Profiles.convertToCSS(self.currentUserSettings))
+       
+
 
     ################ Deals with font colour ################ 
 
     def initFontrgba(self):
         '''Initializes font rgba sliders and adds them to form'''
         #adding fontrgba slider
-        fontrgbSlidersBox = QHBoxLayout()
-
+        self.formLayout.addWidget(QLabel("Font Colour"))
         # Styling Red Slider 
         self.fontRedSliderBox = self.generateSliderBox(0,255,self.updateSliderIndicators)
-        fontrgbSlidersBox.addLayout(self.fontRedSliderBox)
+        self.formLayout.addRow("R:",self.fontRedSliderBox)
         self.fontRedSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "red")))
         # Styling for Green Slider
         self.fontGreenSliderBox = self.generateSliderBox(0, 255, self.updateSliderIndicators)
-        fontrgbSlidersBox.addLayout(self.fontGreenSliderBox)
+        self.formLayout.addRow("G:",self.fontGreenSliderBox)
         self.fontGreenSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "green")))
 
         # Styling for blue slider
         self.fontBlueSliderBox = self.generateSliderBox(0, 255, self.updateSliderIndicators)
-        fontrgbSlidersBox.addLayout(self.fontBlueSliderBox)
+        self.formLayout.addRow("B:",self.fontBlueSliderBox)
         self.fontBlueSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "blue")))
-
-        self.addRow("Colour:",fontrgbSlidersBox)
         # add the font opacity slider
         self.fontOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)
         self.fontOpacityBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "black")))
-        self.addRow("Font Opacity: ",self.fontOpacityBox)
+        self.formLayout.addRow("A:",self.fontOpacityBox)
 
     def updateSliderIndicators(self):
         '''Updates the slider indicator and dictionary when a slider is moved'''
@@ -110,15 +129,13 @@ class ProfileSettings(QFormLayout):
         g = self.fontGreenSliderBox.itemAt(1).widget().value()
         b = self.fontBlueSliderBox.itemAt(1).widget().value()
         a = self.fontOpacityBox.itemAt(1).widget().value() / 100
-
         self.fontrgbaDictionary(f"rgba({r},{g},{b},{a})")
         self.setFontRgbaSliders()
-        self.saveQuitOff()
 
     def fontrgbaDictionary(self,value: str):
         '''Updates dictionary'''
         self.currentUserSettings['color']  = value
-        self.saveQuitOff()
+        self.changed.emit()
 
     def setFontRgbaSliders(self):
         '''sets fonts and and indicator to a given rgba value'''
@@ -146,7 +163,7 @@ class ProfileSettings(QFormLayout):
         self.fontSelector.setStyleSheet("background-color: #4C566A; color: #ffffff;")
         # Ensure order is maintained for correct styling. 
         self.fontSelector.textChanged.connect(self.fontSelectorDictionary)
-        self.addRow("Font:", self.fontSelector)
+        self.formLayout.addRow("Font:", self.fontSelector)
         # CSS for Popup 
         completerListView = fontCompleter.popup()
         completerListView.setStyleSheet("background-color: #4C566A; color: #ffffff;")
@@ -155,7 +172,7 @@ class ProfileSettings(QFormLayout):
     def fontSelectorDictionary(self):
         '''Updates the form selector dictionary'''
         self.currentUserSettings['font-family'] = self.fontSelector.text()
-        self.saveQuitOff()
+        self.changed.emit()
 
     ################ Font Size Selector ################
 
@@ -165,42 +182,39 @@ class ProfileSettings(QFormLayout):
         self.fontSizeSelector = QLineEdit("")
         self.fontSizeSelector.setValidator(fontSizeValidator)
         self.fontSizeSelector.textChanged.connect(self.fontSizeSelectorDictionary)
-        self.addRow("Font Size:",self.fontSizeSelector)
+        self.formLayout.addRow("Font Size:",self.fontSizeSelector)
 
     def fontSizeSelectorDictionary(self):
         if self.fontSizeSelector.text() == "":
             self.currentUserSettings['font-size'] = None
         else:
-            self.currentUserSettings['font-size'] = self.fontSizeSelector.text() + "px"    
-        self.saveQuitOff()
+            self.currentUserSettings['font-size'] = self.fontSizeSelector.text() + "px" 
+        self.changed.emit()
 
     ################ Background Colour ################
 
     def initBackgroundrgba(self):
         '''Initializes font rgba sliders and adds them to form'''
-        #adding fontrgba slider
-        backgroundRgbSlidersBox = QHBoxLayout()
-
         # Styling Red Slider 
+        self.formLayout.addWidget(QLabel("Background Colour"))
         self.backgroundRedSliderBox = self.generateSliderBox(0,255,self.updateBackgroundSliderIndicators)
-        backgroundRgbSlidersBox.addLayout(self.backgroundRedSliderBox)
+        self.formLayout.addRow("R:",self.backgroundRedSliderBox)
         self.backgroundRedSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "red")))
         
         # Styling for Green Slider
         self.backgroundGreenSliderBox = self.generateSliderBox(0, 255, self.updateBackgroundSliderIndicators)
-        backgroundRgbSlidersBox.addLayout(self.backgroundGreenSliderBox)
+        self.formLayout.addRow("G:",self.backgroundGreenSliderBox)
         self.backgroundGreenSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "green")))
 
         # Styling for blue slider
         self.backgroundBlueSliderBox = self.generateSliderBox(0, 255, self.updateBackgroundSliderIndicators)
-        backgroundRgbSlidersBox.addLayout(self.backgroundBlueSliderBox)
+        self.formLayout.addRow("B:",self.backgroundBlueSliderBox)
         self.backgroundBlueSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "blue")))
 
-        self.addRow("Background Colour:",backgroundRgbSlidersBox)
         # add the font opacity slider
-        self.backgroundOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)
+        self.backgroundOpacityBox = self.generateSliderBox(0,100,self.updateBackgroundSliderIndicators)
         self.backgroundOpacityBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "black")))
-        self.addRow("Background Opacity: ",self.backgroundOpacityBox)
+        self.formLayout.addRow("A:",self.backgroundOpacityBox)
 
     def updateBackgroundSliderIndicators(self):
         '''Updates the slider indicator and dictionary when a slider is moved'''
@@ -208,15 +222,13 @@ class ProfileSettings(QFormLayout):
         g = self.backgroundGreenSliderBox.itemAt(1).widget().value()
         b = self.backgroundBlueSliderBox.itemAt(1).widget().value()
         a = self.backgroundOpacityBox.itemAt(1).widget().value() / 100
-
         self.backgroundrgbaDictionary(f"rgba({r},{g},{b},{a})")
         self.setBackgroundRgbaSliders()
-        self.saveQuitOff()
 
     def backgroundrgbaDictionary(self,value: str):
         '''Updates dictionary'''
         self.currentUserSettings['background-color']  = value
-        self.saveQuitOff()
+        self.changed.emit()
 
     def setBackgroundRgbaSliders(self):
         '''sets fonts and and indicator to a given rgba value'''
@@ -233,7 +245,7 @@ class ProfileSettings(QFormLayout):
     def initBorderRadius(self):
         self.borderRadiusSliderBox = self.generateSliderBox(0,25,self.updateBorderRadiusIndicator)
         self.borderRadiusSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style("red"))
-        self.addRow("Border Radius:",self.borderRadiusSliderBox)
+        self.formLayout.addRow("Border Radius:",self.borderRadiusSliderBox)
 
     def updateBorderRadiusIndicator(self):
         self.borderRadiusSliderBox.itemAt(0).widget().setText(str(self.borderRadiusSliderBox.itemAt(1).widget().value()))
@@ -241,6 +253,7 @@ class ProfileSettings(QFormLayout):
 
     def borderRadiusDictionary(self):
         self.currentUserSettings['border-radius'] = str(self.borderRadiusSliderBox.itemAt(1).widget().value()) + "px"
+        self.changed.emit()
 
     def setBorderRadiusSlider(self):
         value = self.currentUserSettings['border-radius'][:-2]
@@ -258,14 +271,16 @@ class ProfileSettings(QFormLayout):
         buttonLayout.addWidget(self.deleteUserButton,2)
         buttonLayout.addStretch(6)
         buttonLayout.addWidget(self.saveButton,2)
-        self.addRow(buttonLayout)
+        self.addLayout(buttonLayout,1,1)
         self.saveQuit = False
 
     def saveButtonFunction(self): #Bug: if repeatly clicked fast it break as it is unable the first run finish breaking the logic 
         '''Save the updated information when called'''
         if not self.validProfile():
             return
-        # Remove old username from database if name has changed
+        if not self.validProfileName():
+            return
+         # Remove old username from database if name has changed
         if self.getEditedUsername() != self.getOriginalUsername():
             Profiles.deleteUser(self.getOriginalUsername())
         Profiles.saveUserProfile(self.getEditedUsername(), self.currentUserSettings)
@@ -275,30 +290,39 @@ class ProfileSettings(QFormLayout):
         else:
             self.saveButton.setText("Save and Exit")
             self.saveQuit = True
+        
 
     def saveQuitOff(self):
         '''Disables the save and quit for use whenever anything else is clicked'''
         self.saveQuit = False
         self.saveButton.setText("Save")
 
-    def validProfile(self):
-        '''Checks validity of the Profile so that it doesnt save a no functioning file'''
-        self.errorMessage.setText("")
-        # Checking if no name was entered
+    def validProfileName(self):
         if self.getEditedUsername() == "":
+            defaultCSS = Profiles.generateDefaultSettings()
+            defaultCSS['color'] = "red"
+            self.errorMessage.setStyleSheet(Profiles.convertToCSS(defaultCSS))
             self.errorMessage.setText("Please enter a profile name")
-            return False
+            return False 
         # Checking if name is already taken
         if self.getOriginalUsername() is None and self.getEditedUsername() in Profiles.getUserList():
+            defaultCSS = Profiles.generateDefaultSettings()
+            defaultCSS['color'] = "red"
+            self.errorMessage.setStyleSheet(Profiles.convertToCSS(defaultCSS))
             self.errorMessage.setText("Profile name already taken.")
             return False
+        return True
+ 
+    def validProfile(self):
+        '''Checks validity of the Profile so that it doesnt save a no functioning file'''
+        self.errorMessage.setText("Lorem Ipsum Dolor Sit Amet")
         # Checking for valid font
         if not self.currentUserSettings['font-family'] in QFontDatabase().families():
             self.errorMessage.setText("Please enter a valid font.")
             return False
         # Checking for valid font size
         if self.currentUserSettings['font-size'] is None:
-            self.errorMessage.setText("Please enter a font size")
+            self.errorMessage.setText("Please enter a font size.")
             return False
         return True
 
@@ -322,7 +346,6 @@ class ProfileSettings(QFormLayout):
     def resetUserSettings(self):
         '''Sets the values of the sliders to the current user settings'''
         self.currentUserSettings = Profiles.getUserSettings(self.getOriginalUsername())
-        
         #Rgba font slider reset
         self.setFontRgbaSliders()
         self.setBackgroundRgbaSliders()
@@ -338,6 +361,7 @@ class ProfileSettings(QFormLayout):
             self.fontSelector.setText(self.currentUserSettings['font-family'])
         else:
             self.fontSelector.setText("")
+        self.changed.emit()
 
 
     def generateSliderBox(self,min: int, max: int,function):
@@ -353,7 +377,7 @@ class ProfileSettings(QFormLayout):
         sliderBox.addWidget(slider)
         slider.valueChanged.connect(function)
         return sliderBox
-    ################ Window Wide Events ################
+    ################ Event Handler ################
 
     def resizeEvent(self,event):
         super().resizeEvent(event)
@@ -362,7 +386,11 @@ class ProfileSettings(QFormLayout):
         '''Enables editing of the name of a already made profile'''
         if event.type() == event.MouseButtonDblClick and source is self.DropDownMenu:
             self.DropDownMenu.setEditable(True)
+            self.DropDownMenu.setStyleSheet(Profiles.getStyleSheet())
         return super().eventFilter(source, event)
 
+    def changedEvent(self): 
+        self.updatePreview()
+        self.saveQuitOff()
 
 

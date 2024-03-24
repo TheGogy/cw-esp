@@ -48,6 +48,13 @@ class Profiles:
         else:
             return Path(__file__).resolve().parent
 
+    def getStyleSheet():
+        '''Opening and Reading Stylesheet'''
+        filename =  Profiles.getAppDirectory() / "Styles" / "CssFile.qss"
+        with open(str(filename),"r") as file:
+            return file.read()
+
+
     def getCurrentUserCSS():
         with open(Profiles.getUserPath(Profiles.getCurrentUser()), "r") as file:
             return "".join(file.readlines())
@@ -116,23 +123,27 @@ class Profiles:
     def generateDefaultSettings():
         userSettings = {}
         userSettings['color'] = "rgba(255,255,255,1)"
-        userSettings['font-family'] = None 
-        userSettings['font-size'] = None
+        userSettings['font-family'] = "Arial" 
+        userSettings['font-size'] = "12px"
         userSettings['background-color'] = "rgba(0,0,0,0.2)"
         userSettings['border-radius'] = "0px"
         return userSettings
 
     def saveUserProfile(user: str,currentUserSettings: dict):
         userProfilePath = Profiles.getUserPath(user)
-        css_string = "QLabel {\n"
-        for element in currentUserSettings.keys():
-            css_string += f"{element}: {currentUserSettings[element]};\n"
-        css_string += "}"
+        cssString = Profiles.convertToCSS(currentUserSettings)
         with open(userProfilePath, 'w') as userFile:
-            userFile.write(css_string)
+            userFile.write(cssString)
         if not Profiles.userExists(user):
             Profiles.addUser(user)
         Profiles.setCurrentUser(user)
+
+    def convertToCSS(userSettings: dict):
+        cssString = "QLabel {\n"
+        for element in userSettings.keys():
+            cssString += f"{element}: {userSettings[element]};\n"
+        cssString += "}"
+        return cssString
 
     def deleteUser(user: str):
         userProfiles = Profiles.getUserProfiles()

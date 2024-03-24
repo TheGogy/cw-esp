@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout, QVBoxLayout
 from PyQt5.QtCore import  pyqtSignal, QObject, QTextStream, QFile
 
 from Profiles import Profiles
@@ -16,8 +16,9 @@ class SettingsWindow(QDialog):
     def __init__(self, name=None):
         super().__init__()
         self.setGeometry(100,100,600,300)
-        self.layout = QHBoxLayout()
+        self.layout = QVBoxLayout()
         self.setLayout(self.layout)
+        self.initLeftColumnLayout()
         self.leftColumnLayout = QFormLayout()
         self.installWorker = InstallWorker()
         if name == None:
@@ -31,62 +32,36 @@ class SettingsWindow(QDialog):
         if name == "model":
             self.RightColumnLayout = InstallSettings(self.installWorker)
             self.setWindowTitle("Download a model.")
-
         self.layout.addLayout(self.leftColumnLayout,1)
         self.layout.addLayout(self.RightColumnLayout,9)
-        self.initLeftColumnLayout()
         self.communicate = Communicate()
-        self.cssPath = Profiles.getAppDirectory() / "Styles" / "CssFile.qss"
-        self.loadStylesheet(self.cssPath)
+        self.setStyleSheet(Profiles.getStyleSheet())
 
 
     def initLeftColumnLayout(self):
-        self.leftColumnExpanded = False
-        self.collapseButton = QPushButton("",self)
-        self.textPromptLayout = QFormLayout()
-        self.setMinimumWidth(1)
-        self.collapseButton.clicked.connect(self.collapsebuttonFunction)
-        self.leftColumnLayout.addRow(self.collapseButton)
-        self.profilesButton = QPushButton("P",self)
-        self.profilesButton.setMinimumWidth(1)
+        self.leftColumnLayout = QHBoxLayout()
+        self.profilesButton = QPushButton("Profiles",self)
         self.profilesButton.clicked.connect(self.initProfileSettings)
-        self.leftColumnLayout.addRow(self.profilesButton)
-        self.modelsButton = QPushButton("M",self)
-        self.modelsButton.setMinimumWidth(1)
+        self.leftColumnLayout.addWidget(self.profilesButton,2)
+        self.modelsButton = QPushButton("Models",self)
         self.modelsButton.clicked.connect(self.initInstallSettings)
-        self.leftColumnLayout.addRow(self.modelsButton)
-
-    def collapsebuttonFunction(self):
-        if not self.leftColumnExpanded:
-            self.layout.setStretch(1,3)
-            self.modelsButton.setText("Models")
-            self.profilesButton.setText("Profiles")
-
-        else:
-            self.layout.setStretch(1,9)
-            self.modelsButton.setText("M")
-            self.profilesButton.setText("P")
-        self.leftColumnExpanded = not self.leftColumnExpanded
+        self.leftColumnLayout.addWidget(self.modelsButton,2)
+        self.leftColumnLayout.addStretch(6)
+        self.layout.addLayout(self.leftColumnLayout)
 
     def initInstallSettings(self):
         if isinstance(self.RightColumnLayout,InstallSettings):
             return
         self.deleteLayout(self.RightColumnLayout)
         self.RightColumnLayout = InstallSettings(self.installWorker)
-        if self.leftColumnExpanded:
-            self.layout.addLayout(self.RightColumnLayout,3)
-        else:
-            self.layout.addLayout(self.RightColumnLayout,9)
+        self.layout.addLayout(self.RightColumnLayout,9)
 
     def initProfileSettings(self):
         if isinstance(self.RightColumnLayout,ProfileSettings):
             return
         self.deleteLayout(self.RightColumnLayout)
         self.RightColumnLayout = ProfileSettings()
-        if self.leftColumnExpanded:
-            self.layout.addLayout(self.RightColumnLayout,3)
-        else:
-            self.layout.addLayout(self.RightColumnLayout,9)
+        self.layout.addLayout(self.RightColumnLayout,9)
 
     def deleteLayout(self, layout):
         for i in reversed(range(layout.count())):
@@ -100,20 +75,6 @@ class SettingsWindow(QDialog):
                 widget.setParent(None)
                 widget.deleteLater()
         layout.deleteLater()
-
-    def loadStylesheet(self, filename):
-        '''Opening and Reading Stylesheet'''
-        style_file = QFile(str(filename))
-        if not style_file.open(QFile.ReadOnly | QFile.Text):
-            print("error - can't open css_file :", filename)
-            return
-        else:
-            print("opened successfully:", filename)
-
-        stream = QTextStream(style_file)
-        stylesheet_content = stream.readAll()
-        self.setStyleSheet(stylesheet_content)
-
 
     def closeEvent(self,event):
         self.installWorker.terminate()
