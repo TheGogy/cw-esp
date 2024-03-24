@@ -3,6 +3,7 @@ from PyQt5.QtCore import  pyqtSignal, QObject, pyqtSlot, QThread
 import os
 import re
 from Profiles import Profiles
+import re
 
 class InstallWorkerSignals(QObject):
     finished = pyqtSignal()
