@@ -69,8 +69,6 @@ Users: !!set
   test_user_delete: null
 """
 )
-    
-print(Profiles.getCurrentUserCSS())
 
 # Profiles test class
 class test_Profiles(unittest.TestCase):
