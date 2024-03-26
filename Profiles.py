@@ -121,12 +121,13 @@ class Profiles:
         Profiles.saveProfilesFile(userProfiles)
 
     def generateDefaultSettings():
-        userSettings = {}
-        userSettings['color'] = "rgba(255,255,255,1)"
-        userSettings['font-family'] = "Arial" 
-        userSettings['font-size'] = "12px"
-        userSettings['background-color'] = "rgba(0,0,0,0.2)"
-        userSettings['border-radius'] = "0px"
+        userSettings = {
+            'color'            : "rgba(255,255,255,1)",
+            'font-family'      : "Arial",
+            'font-size'        : "12px",
+            'background-color' : "rgba(0,0,0,0.2)",
+            'border-radius'    : "0px"
+        }
         return userSettings
 
     def saveUserProfile(user: str,currentUserSettings: dict):

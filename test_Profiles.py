@@ -15,6 +15,8 @@ QLabel {
 color: rgba(195,78,92,0.85);
 font-family: Fira Code;
 font-size: 20px;
+background-color: rgba(0, 0, 0, 0);
+border-radius: 10px;
 }
 """
 )
@@ -25,6 +27,20 @@ QLabel {
 color: rgba(43,43,43,1);
 font-family: Arial;
 font-size: 12px;
+background-color: rgba(10, 10, 10, 0);
+border-radius: 10px;
+}
+"""
+)
+    
+with open(RUNTIME_DIR / "Users/test_user_3.css", "w") as f:
+    f.write("""
+QLabel {
+color: rgba(13,6,6,1);
+font-family: Arial;
+font-size: 12px;
+background-color: rgba(20, 20, 20, 0);
+border-radius: 10px;
 }
 """
 )
@@ -35,16 +51,8 @@ QLabel {
 color: rgba(13,6,6,1);
 font-family: Arial;
 font-size: 12px;
-}
-"""
-)
-
-with open(RUNTIME_DIR / "Users/test_user_3.css", "w") as f:
-    f.write("""
-QLabel {
-color: rgba(13,6,6,1);
-font-family: Arial;
-font-size: 12px;
+background-color: rgba(0, 0, 0, 0);
+border-radius: 10px;
 }
 """
 )
@@ -53,7 +61,7 @@ font-size: 12px;
 with open(RUNTIME_DIR / "Profiles.yml", "w") as f:
     f.write(f"""
 Current: test_user_1
-DefaultPath: {str(RUNTIME_DIR / "Users")}
+DefaultPath: {str(RUNTIME_DIR)}
 Users: !!set
   test_user_1: null
   test_user_2: null
@@ -61,7 +69,8 @@ Users: !!set
   test_user_delete: null
 """
 )
-
+    
+print(Profiles.getCurrentUserCSS())
 
 # Profiles test class
 class test_Profiles(unittest.TestCase):
@@ -74,6 +83,8 @@ QLabel {
 color: rgba(195,78,92,0.85);
 font-family: Fira Code;
 font-size: 20px;
+background-color: rgba(0, 0, 0, 0);
+border-radius: 10px;
 }
 """
         self.assertEqual(Profiles.getCurrentUserCSS(), test_user_1_cssData)
@@ -96,6 +107,8 @@ QLabel {
 color: rgba(195,78,92,0.85);
 font-family: Fira Code;
 font-size: 20px;
+background-color: rgba(0, 0, 0, 0);
+border-radius: 10px;
 }
 """
         self.assertEqual(Profiles.getCurrentUserCSS(), test_user_1_cssData)
@@ -124,15 +137,15 @@ font-size: 20px;
     # Test Profiles.getUserPath(user)
     @pytest.mark.order(7)
     def test_getUserPath(self):
-        self.assertEqual(str(RUNTIME_DIR / "Users/test_user_1.css"), Profiles.getUserPath("test_user_1"))
-        self.assertEqual(str(RUNTIME_DIR / "Users/test_user_2.css"), Profiles.getUserPath("test_user_2"))
+        self.assertEqual(RUNTIME_DIR / "Users/test_user_1.css", Profiles.getUserPath("test_user_1"))
+        self.assertEqual(RUNTIME_DIR / "Users/test_user_2.css", Profiles.getUserPath("test_user_2"))
 
     # Test Profiles.getUserProfiles()
     @pytest.mark.order(8)
     def test_getUserProfiles(self):
         self.assertEqual({
             "Current": "test_user_get_settings",
-            "DefaultPath": str(RUNTIME_DIR / "Users"),
+            "DefaultPath": str(RUNTIME_DIR),
             "Users": {"test_user_1", "test_user_2", "test_user_3", "test_user_delete", "test_user_get_settings"}
         },
         Profiles.getUserProfiles())
@@ -141,9 +154,11 @@ font-size: 20px;
     @pytest.mark.order(9)
     def test_generateDefaultSettings(self):
         userSettings = {
-            "color": "rgba(255,255,255,1)",
-            "font-family": None,
-            "font-size": None
+            'color'            : "rgba(255,255,255,1)",
+            'font-family'      : "Arial",
+            'font-size'        : "12px",
+            'background-color' : "rgba(0,0,0,0.2)",
+            'border-radius'    : "0px"
         }
         self.assertEqual(Profiles.generateDefaultSettings(), userSettings)
 
