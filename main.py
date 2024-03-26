@@ -9,7 +9,9 @@ import json
 from SubtitleWindow import SubtitleWindow
 from Profiles import Profiles
 from SettingsWindow import SettingsWindow
-'''This script processes audio input from the microphone and displays the transcribed text.'''
+
+"""This script processes audio input from the microphone and displays the transcribed text."""
+
 
 class MicrophoneThread(QThread):
     def __init__(self):
@@ -23,11 +25,11 @@ class MicrophoneThread(QThread):
             sys.exit()
         self.window = SubtitleWindow()
         self.window.show()
-    def run(self):
 
+    def run(self):
         # get the samplerate - this is needed by the Kaldi recognizer
-        device_info = sd.query_devices(sd.default.device[0], 'input')
-        samplerate = int(device_info['default_samplerate'])
+        device_info = sd.query_devices(sd.default.device[0], "input")
+        samplerate = int(device_info["default_samplerate"])
 
         # display the default input device
 
@@ -46,7 +48,7 @@ class MicrophoneThread(QThread):
 
         try:
             with sd.RawInputStream(
-                dtype='int16',
+                dtype="int16",
                 channels=1,
                 blocksize=8000,
                 callback=recordCallback,
@@ -61,13 +63,14 @@ class MicrophoneThread(QThread):
                     else:
                         recognizer.Reset()
 
-                
         except KeyboardInterrupt:
-            print('===> Finished Recording')
+            print("===> Finished Recording")
         except Exception as e:
             print(str(e))
 
-app = QApplication(sys.argv)
-microphoneThread = MicrophoneThread()
-microphoneThread.start()
-sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    microphoneThread = MicrophoneThread()
+    microphoneThread.start()
+    sys.exit(app.exec_())
