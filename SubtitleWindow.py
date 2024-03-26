@@ -7,7 +7,7 @@ from SettingsWindow import SettingsWindow
 
 
 class SubtitleWindow(QMainWindow):
-    ################ Initialation ###############
+    ################ Initialization ###############
 
     def __init__(self):
         super().__init__()
