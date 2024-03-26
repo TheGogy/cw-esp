@@ -50,6 +50,7 @@ class ProfileSettings(QGridLayout):
         self.DropDownMenu = QComboBox()
         self.fillDropDownMenu()
         self.DropDownMenu.activated.connect(self.changedUser)
+
         self.DropDownMenu.editTextChanged.connect(self.changedEvent)
         self.addWidget(self.DropDownMenu,1,0)
         self.DropDownMenu.installEventFilter(self) 
@@ -96,8 +97,7 @@ class ProfileSettings(QGridLayout):
         if not self.validProfile():
             return
         self.errorMessage.setStyleSheet(Profiles.convertToCSS(self.currentUserSettings))
-       
-
+      
 
     ################ Deals with font colour ################ 
 
@@ -288,6 +288,7 @@ class ProfileSettings(QGridLayout):
         if self.saveQuit: 
             self.closed.emit()
         else:
+            self.updatePreview()
             self.saveButton.setText("Save and Exit")
             self.saveQuit = True
         
@@ -388,6 +389,7 @@ class ProfileSettings(QGridLayout):
             self.DropDownMenu.setEditable(True)
             self.DropDownMenu.setStyleSheet(Profiles.getStyleSheet())
         return super().eventFilter(source, event)
+
 
     def changedEvent(self): 
         self.updatePreview()

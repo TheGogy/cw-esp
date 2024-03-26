@@ -2,6 +2,6 @@
 Models/*model*
 Users/*.css
 __pycache__
-test.py
+# test.py
 Profiles.yml
 .DS_Store

@@ -6,37 +6,31 @@ import yaml
 import sys
 import os
 import shutil
-import re
-import asyncio
-import aiohttp
+import requests
 
-def getSize(num):
-    for unit in ("", "KB", "MB"):
-        if num < 1000.0:
-            return f'{num:3.1f} {unit}'
-        num /= 1000.0
-    return f'{num:.1f} GB'
+def getDownloadLinks(availableModels, url):
+    content = requests.get(url).text
+    soup = BeautifulSoup(content, "html.parser")
+    rows = soup.find_all("tr")
+    for row in rows:
+        columns = row.find_all("td")
+        if columns:
+            link = columns[0].a
+            if not link or len(columns) < 4:
+                continue
 
-async def fetch(session, url):
-    async with session.head(url) as response:
-        return response.headers.get('Content-Length', 0)
+            size = columns[1].text.strip()
+            errorRate = columns[2].text.strip()
+            notes = columns[3].text.strip()
+            modelLicense = columns[4].text.strip()
 
-async def getDownloadLinks(url):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            content = await response.text()
-            soup = BeautifulSoup(content, 'html.parser')
-            links = soup.find_all('a', href=re.compile('\S*vosk-model\S*.zip'))
-            tasks = []
-            for link in links:
-                tasks.append(fetch(session, link.get('href')))
-            sizes = await asyncio.gather(*tasks)
-            return links, sizes
-
-async def getDownloadLinksAsync(availableModels: dict, url: str):
-    links,sizes = await getDownloadLinks(url)
-    for link, size in zip(links, sizes):
-        availableModels[link.get_text()] = [link.get("href"), getSize(int(size))]
+            availableModels[link.get_text()] = [
+                link.get("href"),
+                size,
+                errorRate,
+                notes,
+                modelLicense,
+            ]
 
 class Profiles:
     ################ Database Queries ################
@@ -190,7 +184,7 @@ class Profiles:
     def generateAvailableModels():
         availableModels = {}
         modelsUrl = "https://alphacephei.com/vosk/models"
-        asyncio.run(getDownloadLinksAsync(availableModels, modelsUrl))
+        getDownloadLinks(availableModels, modelsUrl)
         return availableModels
 
 

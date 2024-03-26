@@ -34,6 +34,7 @@ border-radius: 10px;
 )
     
 with open(RUNTIME_DIR / "Users/test_user_3.css", "w") as f:
+
     f.write("""
 QLabel {
 color: rgba(13,6,6,1);
@@ -52,7 +53,7 @@ color: rgba(13,6,6,1);
 font-family: Arial;
 font-size: 12px;
 background-color: rgba(0, 0, 0, 0);
-border-radius: 10px;
+border-radius: 10px
 }
 """
 )
