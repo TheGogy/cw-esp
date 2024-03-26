@@ -35,8 +35,7 @@ class SettingsWindow(QDialog):
         self.layout.addLayout(self.leftColumnLayout,1)
         self.layout.addLayout(self.RightColumnLayout,9)
         self.communicate = Communicate()
-        self.cssPath = Profiles.getAppDirectory() / "Styles" / "CssFile.qss"
-        self.loadStylesheet(self.cssPath)
+        self.setStyleSheet(Profiles.getStyleSheet())
 
 
     def initLeftColumnLayout(self):
@@ -76,20 +75,6 @@ class SettingsWindow(QDialog):
                 widget.setParent(None)
                 widget.deleteLater()
         layout.deleteLater()
-
-    def loadStylesheet(self, filename):
-        '''Opening and Reading Stylesheet'''
-        style_file = QFile(str(filename))
-        if not style_file.open(QFile.ReadOnly | QFile.Text):
-            print("error - can't open css_file :", filename)
-            return
-        else:
-            print("opened successfully:", filename)
-
-        stream = QTextStream(style_file)
-        stylesheet_content = stream.readAll()
-        self.setStyleSheet(stylesheet_content)
-
 
     def closeEvent(self,event):
         self.installWorker.terminate()
