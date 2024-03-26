@@ -36,7 +36,6 @@ class ProfileSettings(QGridLayout):
         self.buttonInit()
         self.resetUserSettings()
         self.changed.connect(self.changedEvent)
-
         self.formatLayoutSizes()
 
     def formatLayoutSizes(self):
@@ -88,7 +87,6 @@ class ProfileSettings(QGridLayout):
         self.errorMessage = QLabel()
         self.errorMessage.setAlignment(Qt.AlignBottom)
         self.errorMessage.setText("Lorem Ipsum Dolor Sit Amet")
-
         self.addWidget(self.errorMessage,0,1)
         self.updatePreview()
 
@@ -99,8 +97,7 @@ class ProfileSettings(QGridLayout):
         if not self.validProfile():
             return
         self.errorMessage.setStyleSheet(Profiles.convertToCSS(self.currentUserSettings))
-       
-
+      
 
     ################ Deals with font colour ################ 
 
@@ -307,7 +304,6 @@ class ProfileSettings(QGridLayout):
             defaultCSS['color'] = "red"
             self.errorMessage.setStyleSheet(Profiles.convertToCSS(defaultCSS))
             self.errorMessage.setText("Please enter a profile name")
-
             return False 
         # Checking if name is already taken
         if self.getOriginalUsername() is None and self.getEditedUsername() in Profiles.getUserList():
@@ -317,7 +313,6 @@ class ProfileSettings(QGridLayout):
             self.errorMessage.setText("Profile name already taken.")
             return False
         return True
-
  
     def validProfile(self):
         '''Checks validity of the Profile so that it doesnt save a no functioning file'''
@@ -394,6 +389,7 @@ class ProfileSettings(QGridLayout):
             self.DropDownMenu.setEditable(True)
             self.DropDownMenu.setStyleSheet(Profiles.getStyleSheet())
         return super().eventFilter(source, event)
+
 
     def changedEvent(self): 
         self.updatePreview()
