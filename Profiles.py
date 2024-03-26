@@ -48,6 +48,13 @@ class Profiles:
         else:
             return Path(__file__).resolve().parent
 
+    def getStyleSheet():
+        '''Opening and Reading Stylesheet'''
+        filename =  Profiles.getAppDirectory() / "Styles" / "CssFile.qss"
+        with open(str(filename),"r") as file:
+            return file.read()
+
+
     def getCurrentUserCSS():
         with open(Profiles.getUserPath(Profiles.getCurrentUser()), "r") as file:
             return "".join(file.readlines())
@@ -116,8 +123,8 @@ class Profiles:
     def generateDefaultSettings():
         userSettings = {}
         userSettings['color'] = "rgba(255,255,255,1)"
-        userSettings['font-family'] = None 
-        userSettings['font-size'] = None
+        userSettings['font-family'] = "Arial" 
+        userSettings['font-size'] = "12px"
         userSettings['background-color'] = "rgba(0,0,0,0.2)"
         userSettings['border-radius'] = "0px"
         return userSettings
