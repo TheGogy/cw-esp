@@ -33,7 +33,7 @@ class SettingsWindow(QDialog):
             self.RightColumnLayout = InstallSettings(self.installWorker)
             self.setWindowTitle("Download a model.")
         self.layout.addLayout(self.leftColumnLayout,1)
-        self.layout.addLayout(self.RightColumnLayout,9)
+        self.layout.addLayout(self.RightColumnLayout,100)
         self.communicate = Communicate()
         self.setStyleSheet(Profiles.getStyleSheet())
 
@@ -54,14 +54,14 @@ class SettingsWindow(QDialog):
             return
         self.deleteLayout(self.RightColumnLayout)
         self.RightColumnLayout = InstallSettings(self.installWorker)
-        self.layout.addLayout(self.RightColumnLayout,9)
+        self.layout.addLayout(self.RightColumnLayout,100)
 
     def initProfileSettings(self):
         if isinstance(self.RightColumnLayout,ProfileSettings):
             return
         self.deleteLayout(self.RightColumnLayout)
         self.RightColumnLayout = ProfileSettings()
-        self.layout.addLayout(self.RightColumnLayout,9)
+        self.layout.addLayout(self.RightColumnLayout,100)
 
     def deleteLayout(self, layout):
         for i in reversed(range(layout.count())):
