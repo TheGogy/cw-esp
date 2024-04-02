@@ -4,23 +4,14 @@ QComboBox {
     padding: 1px 18px 1px 3px;
     min-width: 6em;
     color: #ffffff;
-    background: #4C566A;    
-}
-
-/* Drop Down Button */
-QComboBox::drop-down {
-    background: #D8DEE9;    
-    color: #ffffff;
+    background: #4C566A;
 }
 
 /* Sets the colour of the options displayed once clicked on dropdown menu */
 QComboBox QAbstractItemView {
     background-color: #4C566A; 
     color: #ffffff;
-}
-QString {
-    background-color: #4C566A; 
-    color: #ffffff;
+    margin:0,0,0,0;
 }
 /* Slider */
 QSlider{ 
@@ -39,14 +30,10 @@ QLabel {
 }
 
 /* Text Box - Font and Size */
-QLineEdit{
+QLineEdit {
     background: #4C566A;
     /* color effects the font colour in Font and Text Box */
     color: #ffffff;
-}
-
-QLineEdit::drop-down {
-    background-color: #4C566A; /* Set background color of the drop-down arrow */
 }
 
 /* Delete and Save */
