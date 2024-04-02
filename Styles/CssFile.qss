@@ -13,6 +13,7 @@ QComboBox QAbstractItemView {
     color: #ffffff;
     margin:0,0,0,0;
 }
+
 /* Slider */
 QSlider{ 
     background: transparent; 

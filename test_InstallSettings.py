@@ -17,6 +17,7 @@ def setup_function(scope='session'):
 @pytest.fixture(scope="session")
 def teardown_function(scope='session'):
     Profiles.emptyDatabase()
+    
 class MockProfiles:
     @staticmethod
     def installModel(model_name):

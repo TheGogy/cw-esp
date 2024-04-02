@@ -245,5 +245,6 @@ class Profiles:
             shutil.rmtree("Models")
         if os.path.isdir("Users"):
             shutil.rmtree("Users")
+
 if __name__ == '__main__':
     Profiles.generateProfilesFile()
