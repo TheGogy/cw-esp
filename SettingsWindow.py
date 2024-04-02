@@ -15,7 +15,7 @@ class SettingsWindow(QDialog):
 
     def __init__(self, name=None):
         super().__init__()
-        self.setGeometry(100,100,600,300)
+        self.setGeometry(100,100,835,560)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.initLeftColumnLayout()
@@ -36,7 +36,7 @@ class SettingsWindow(QDialog):
         self.layout.addLayout(self.RightColumnLayout,100)
         self.communicate = Communicate()
         self.setStyleSheet(Profiles.getStyleSheet())
-
+       
 
     def initLeftColumnLayout(self):
         self.leftColumnLayout = QHBoxLayout()

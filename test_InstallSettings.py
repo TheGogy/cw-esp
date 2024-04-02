@@ -1,4 +1,5 @@
 from InstallSettings import InstallWorker, InstallWorkerSignals, InstallSettings
+from Profiles import Profiles
 import pytest
 from PyQt5.QtWidgets import QComboBox, QPushButton
 
@@ -9,6 +10,13 @@ ssl._create_default_https_context = ssl._create_stdlib_context
 
 # SETUP and TEARDOWN #
 ####################################################################################
+@pytest.fixture(scope="session")
+def setup_function(scope='session'):
+    Profiles.generateProfilesFile()
+
+@pytest.fixture(scope="session")
+def teardown_function(scope='session'):
+    Profiles.emptyDatabase()
 class MockProfiles:
     @staticmethod
     def installModel(model_name):
@@ -94,9 +102,8 @@ def testInterruptedInitInstallWorker(installWorker):
     assert hasattr(installSettings.installWorker.signals, 'interrupted')
 
 @pytest.mark.order(7)
-def testInitDropdownMenu(qtbot, installWorker):
+def testInitDropdownMenu(qtbot, installSettings):
     # check initialisation
-    installSettings = InstallSettings(installWorker)
     assert installSettings.modelSelector is not None
     assert isinstance(installSettings.modelSelector, QComboBox)
     # check model selection connection
@@ -106,10 +113,7 @@ def testInitDropdownMenu(qtbot, installWorker):
         # emits mic signal and if true passes test case.
 
 @pytest.mark.order(8)
-def testInitButtonsInitialisation(installWorker):
-    # Create an instance of InstallSettings
-    installSettings = InstallSettings(installWorker)
-
+def testInitButtonsInitialisation(installSettings):
     # check if the installButton and deleteButton are initialised 
     assert installSettings.installButton is not None
     assert isinstance(installSettings.installButton, QPushButton)
@@ -117,18 +121,14 @@ def testInitButtonsInitialisation(installWorker):
     assert isinstance(installSettings.deleteButton, QPushButton)
 
 @pytest.mark.order(9)
-def testInitButtonsFunctionsInstall(installWorker):
-    # create instance of InstallSettings
-    installSettings = InstallSettings(installWorker)
+def testInitButtonsFunctionsInstall(installSettings):
     # qbot is a little funky so instead call function directly
     installSettings.installFunction()
     # test install button, should be enough 
     assert installSettings.installButton.text() == "Install"
 
 @pytest.mark.order(10)
-def testInitButtonsFunctionsDelete(installWorker):
-    # create instance of InstallSettings
-    installSettings = InstallSettings(installWorker)
+def testInitButtonsFunctionsDelete(installSettings):
     # qbot is a little funky so instead call function directly
     installSettings.installFunction() # 
     # now test the delete functions

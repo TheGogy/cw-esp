@@ -176,7 +176,7 @@ class Profiles:
         with open(profilesPath, 'w') as file:
             yaml.dump(data, file, default_flow_style=False)
 
-    def setCurrentUser(user):
+    def setCurrentUser(user: str):
         userProfiles = Profiles.getUserProfiles()
         userProfiles['Current'] = user
         Profiles.saveProfilesFile(userProfiles)
@@ -200,7 +200,7 @@ class Profiles:
     def getCurrentModel():
         return Profiles.getUserProfiles()['CurrentModel']
 
-    def installModel(modelName):
+    def installModel(modelName: str):
         try:
             modelUrl = Profiles.getModelUrls()[modelName][0]
         except KeyError:
@@ -237,6 +237,13 @@ class Profiles:
         profiles = Profiles.getUserProfiles()
         profiles['CurrentModel'] = modelName
         Profiles.saveProfilesFile(profiles)
- 
+
+    def emptyDatabase():
+        if os.path.isfile("Profiles.yml"):
+            os.remove("Profiles.yml")
+        if os.path.isdir("Models"):
+            shutil.rmtree("Models")
+        if os.path.isdir("Users"):
+            shutil.rmtree("Users")
 if __name__ == '__main__':
     Profiles.generateProfilesFile()

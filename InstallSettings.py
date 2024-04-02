@@ -95,7 +95,7 @@ class InstallSettings(QVBoxLayout):
 
     def deleteButtonFunction(self):
         if self.installWorker.isRunning():
-            self.installWorker.terminsetRowMinimumHate()
+            self.installWorker.terminate()
         elif self.getCurrentModelText() in Profiles.getInstalledModels():   
             Profiles.deleteModel(self.getCurrentModelText())
         self.updateButtonText()
