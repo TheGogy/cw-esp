@@ -79,7 +79,7 @@ class ProfileSettings(QGridLayout):
             self.DropDownMenu.setEditable(True)
             self.DropDownMenu.setCurrentText("")
             self.DropDownMenu.setStyleSheet(Profiles.getStyleSheet())
-
+            
     ################ Error Message ################
 
     def initErrorMessage(self):
