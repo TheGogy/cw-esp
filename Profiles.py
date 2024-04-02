@@ -6,37 +6,31 @@ import yaml
 import sys
 import os
 import shutil
-import re
-import asyncio
-import aiohttp
+import requests
 
-def getSize(num):
-    for unit in ("", "KB", "MB"):
-        if num < 1000.0:
-            return f'{num:3.1f} {unit}'
-        num /= 1000.0
-    return f'{num:.1f} GB'
+def getDownloadLinks(availableModels, url):
+    content = requests.get(url).text
+    soup = BeautifulSoup(content, "html.parser")
+    rows = soup.find_all("tr")
+    for row in rows:
+        columns = row.find_all("td")
+        if columns:
+            link = columns[0].a
+            if not link or len(columns) < 4:
+                continue
 
-async def fetch(session, url):
-    async with session.head(url) as response:
-        return response.headers.get('Content-Length', 0)
+            size = columns[1].text.strip()
+            errorRate = columns[2].text.strip()
+            notes = columns[3].text.strip()
+            modelLicense = columns[4].text.strip()
 
-async def getDownloadLinks(url):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            content = await response.text()
-            soup = BeautifulSoup(content, 'html.parser')
-            links = soup.find_all('a', href=re.compile('\S*vosk-model\S*.zip'))
-            tasks = []
-            for link in links:
-                tasks.append(fetch(session, link.get('href')))
-            sizes = await asyncio.gather(*tasks)
-            return links, sizes
-
-async def getDownloadLinksAsync(availableModels: dict, url: str):
-    links,sizes = await getDownloadLinks(url)
-    for link, size in zip(links, sizes):
-        availableModels[link.get_text()] = [link.get("href"), getSize(int(size))]
+            availableModels[link.get_text()] = [
+                link.get("href"),
+                size,
+                errorRate,
+                notes,
+                modelLicense,
+            ]
 
 class Profiles:
     ################ Database Queries ################
@@ -47,6 +41,13 @@ class Profiles:
             return Path(os.path.dirname(sys.executable))
         else:
             return Path(__file__).resolve().parent
+
+    def getStyleSheet():
+        '''Opening and Reading Stylesheet'''
+        filename =  Profiles.getAppDirectory() / "Styles" / "CssFile.qss"
+        with open(str(filename),"r") as file:
+            return file.read()
+
 
     def getCurrentUserCSS():
         with open(Profiles.getUserPath(Profiles.getCurrentUser()), "r") as file:
@@ -114,25 +115,31 @@ class Profiles:
         Profiles.saveProfilesFile(userProfiles)
 
     def generateDefaultSettings():
-        userSettings = {}
-        userSettings['color'] = "rgba(255,255,255,1)"
-        userSettings['font-family'] = None 
-        userSettings['font-size'] = None
-        userSettings['background-color'] = "rgba(0,0,0,0.2)"
-        userSettings['border-radius'] = "0px"
+        userSettings = {
+            'color'            : "rgba(255,255,255,1)",
+            'font-family'      : "Arial",
+            'font-size'        : "12px",
+            'background-color' : "rgba(0,0,0,0.2)",
+            'border-radius'    : "0px"
+        }
+
         return userSettings
 
     def saveUserProfile(user: str,currentUserSettings: dict):
         userProfilePath = Profiles.getUserPath(user)
-        css_string = "QLabel {\n"
-        for element in currentUserSettings.keys():
-            css_string += f"{element}: {currentUserSettings[element]};\n"
-        css_string += "}"
+        cssString = Profiles.convertToCSS(currentUserSettings)
         with open(userProfilePath, 'w') as userFile:
-            userFile.write(css_string)
+            userFile.write(cssString)
         if not Profiles.userExists(user):
             Profiles.addUser(user)
         Profiles.setCurrentUser(user)
+
+    def convertToCSS(userSettings: dict):
+        cssString = "QLabel {\n"
+        for element in userSettings.keys():
+            cssString += f"{element}: {userSettings[element]};\n"
+        cssString += "}"
+        return cssString
 
     def deleteUser(user: str):
         userProfiles = Profiles.getUserProfiles()
@@ -170,7 +177,7 @@ class Profiles:
         with open(profilesPath, 'w') as file:
             yaml.dump(data, file, default_flow_style=False)
 
-    def setCurrentUser(user):
+    def setCurrentUser(user: str):
         userProfiles = Profiles.getUserProfiles()
         userProfiles['Current'] = user
         Profiles.saveProfilesFile(userProfiles)
@@ -178,7 +185,7 @@ class Profiles:
     def generateAvailableModels():
         availableModels = {}
         modelsUrl = "https://alphacephei.com/vosk/models"
-        asyncio.run(getDownloadLinksAsync(availableModels, modelsUrl))
+        getDownloadLinks(availableModels, modelsUrl)
         return availableModels
 
 
@@ -194,7 +201,7 @@ class Profiles:
     def getCurrentModel():
         return Profiles.getUserProfiles()['CurrentModel']
 
-    def installModel(modelName):
+    def installModel(modelName: str):
         try:
             modelUrl = Profiles.getModelUrls()[modelName][0]
         except KeyError:
@@ -231,6 +238,14 @@ class Profiles:
         profiles = Profiles.getUserProfiles()
         profiles['CurrentModel'] = modelName
         Profiles.saveProfilesFile(profiles)
- 
+
+    def emptyDatabase():
+        if os.path.isfile("Profiles.yml"):
+            os.remove("Profiles.yml")
+        if os.path.isdir("Models"):
+            shutil.rmtree("Models")
+        if os.path.isdir("Users"):
+            shutil.rmtree("Users")
+
 if __name__ == '__main__':
     Profiles.generateProfilesFile()

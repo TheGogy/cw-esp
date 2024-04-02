@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QPushButton,QFormLayout,QHBoxLayout,QComboBox
-from PyQt5.QtCore import  pyqtSignal, QObject, pyqtSlot, QThread
+from PyQt5.QtWidgets import QPushButton,QGridLayout,QVBoxLayout,QHBoxLayout,QComboBox,QLabel, QFormLayout
+from PyQt5.QtCore import  pyqtSignal, QObject, pyqtSlot, QThread,Qt
 import os
 import re
 from Profiles import Profiles
+import re
 
 class InstallWorkerSignals(QObject):
     finished = pyqtSignal()
@@ -27,33 +28,54 @@ class InstallWorker(QThread):
             os.remove(Profiles.getAppDirectory()/ "Models" / "temp.zip")
         self.signals.interrupted.emit()
 
-class InstallSettings(QFormLayout):
+class InstallSettings(QVBoxLayout):
     def __init__(self,installWorker):
         super().__init__()
+        self.availableModels = Profiles.getAvailableModels()
         self.initInstallWorker(installWorker)
+        self.formLayout = QFormLayout()
         self.initDropdownMenu()
+        self.initNotes()
+        self.addLayout(self.formLayout)
+        self.addStretch(10)
         self.initButtons()
 
     def initInstallWorker(self,installWorker):
         self.installWorker = installWorker
-        self.installWorker.signals.began.connect(self.updateButtonText)
-        self.installWorker.signals.finished.connect(self.updateButtonText)
-        self.installWorker.signals.interrupted.connect(self.updateButtonText)
+        self.installWorker.signals.began.connect(self.modelChanged)
+        self.installWorker.signals.finished.connect(self.modelChanged)
+        self.installWorker.signals.interrupted.connect(self.modelChanged)
 
     def initDropdownMenu(self):
-        availableModels = Profiles.getAvailableModels()
+
         currentModel = Profiles.getCurrentModel()
         self.modelSelector = QComboBox()
         self.modelSelector.setDuplicatesEnabled(False)
         if self.installWorker.isRunning():
-            self.modelSelector.addItem(f"[{availableModels[self.installWorker.modelName][1]}] {self.installWorker.modelName}")
-        elif currentModel in availableModels:
-            self.modelSelector.addItem(f"[{availableModels[currentModel][1]}] {currentModel}")
-        for model in sorted(availableModels.keys()):
-            self.modelSelector.addItem(f"[{availableModels[model][1]}] {model}") 
-        self.modelSelector.activated.connect(self.updateButtonText)
-        self.addRow(self.modelSelector)
+            self.modelSelector.addItem(f"[{self.availableModels[self.installWorker.modelName][1]}] {self.installWorker.modelName}")
+        elif currentModel in self.availableModels:
+            self.modelSelector.addItem(f"[{self.availableModels[currentModel][1]}] {currentModel}")
+        for model in sorted(self.availableModels.keys()):
+            self.modelSelector.addItem(f"[{self.availableModels[model][1]}] {model}") 
+        self.modelSelector.activated.connect(self.modelChanged)
+        self.formLayout.addRow("Models:",self.modelSelector)
+        self.formLayout.addRow(" ",None)
 
+    def initNotes(self):
+        availableModels = Profiles.getAvailableModels()
+        gridLayout = QGridLayout()
+        self.notes = QLabel(f"Notes:\n{availableModels[self.getCurrentModelText()][3]}")
+        self.notes.setStyleSheet("font-size: 15px;background:rgba(0,0,0,0.2)")
+        self.notes.setMinimumHeight(200)
+        self.notes.setAlignment(Qt.AlignTop)
+        self.license = QLabel(f"License: {availableModels[self.getCurrentModelText()][4]}")
+        self.license.setStyleSheet("font-size: 18px;background:rgba(0,0,0,0.3)")
+        self.license.setMaximumHeight(50)
+        gridLayout.addWidget(self.notes,0,0,3,5,alignment=Qt.AlignTop)
+        gridLayout.addWidget(self.license,2,4)
+        self.formLayout.addRow(gridLayout)
+        
+    
     def initButtons(self):
         self.installButton = QPushButton()
         self.deleteButton = QPushButton()
@@ -64,7 +86,7 @@ class InstallSettings(QFormLayout):
         buttonLayout.addStretch(6)
         buttonLayout.addWidget(self.installButton,2)
         self.updateButtonText()
-        self.addRow(buttonLayout)
+        self.addLayout(buttonLayout)
 
     def installFunction(self):
         if self.getCurrentModelText() in Profiles.getInstalledModels():
@@ -94,6 +116,16 @@ class InstallSettings(QFormLayout):
             self.deleteButton.setText("Delete")
             self.installButton.setText("Install")
             return
+    
+    def updateNotesText(self):
+        availableModels = Profiles.getAvailableModels()
+        self.notes.setText(f"Notes:\n{availableModels[self.getCurrentModelText()][3]}")
+        self.license.setText(f"License: {availableModels[self.getCurrentModelText()][4]}")
+
+    def modelChanged(self):
+        self.updateButtonText()
+        self.updateNotesText()
+
 
     def getCurrentModelText(self):
         return re.findall(r'\[.*\] (.*)',self.modelSelector.currentText())[0]
