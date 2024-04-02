@@ -35,7 +35,6 @@ QLineEdit {
     background: #4C566A;
     /* color effects the font colour in Font and Text Box */
     color: #ffffff;
-
 }
 
 /* Delete and Save */

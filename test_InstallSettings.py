@@ -17,7 +17,7 @@ def setup_function(scope='session'):
 @pytest.fixture(scope="session")
 def teardown_function(scope='session'):
     Profiles.emptyDatabase()
-
+    
 class MockProfiles:
     @staticmethod
     def installModel(model_name):
@@ -105,7 +105,6 @@ def testInterruptedInitInstallWorker(installWorker):
 @pytest.mark.order(7)
 def testInitDropdownMenu(qtbot, installSettings):
     # check initialisation
-
     assert installSettings.modelSelector is not None
     assert isinstance(installSettings.modelSelector, QComboBox)
     # check model selection connection
@@ -116,7 +115,6 @@ def testInitDropdownMenu(qtbot, installSettings):
 
 @pytest.mark.order(8)
 def testInitButtonsInitialisation(installSettings):
-
     # check if the installButton and deleteButton are initialised 
     assert installSettings.installButton is not None
     assert isinstance(installSettings.installButton, QPushButton)
@@ -125,7 +123,6 @@ def testInitButtonsInitialisation(installSettings):
 
 @pytest.mark.order(9)
 def testInitButtonsFunctionsInstall(installSettings):
-
     # qbot is a little funky so instead call function directly
     installSettings.installFunction()
     # test install button, should be enough 
@@ -133,7 +130,6 @@ def testInitButtonsFunctionsInstall(installSettings):
 
 @pytest.mark.order(10)
 def testInitButtonsFunctionsDelete(installSettings):
-
     # qbot is a little funky so instead call function directly
     installSettings.installFunction() # 
     # now test the delete functions

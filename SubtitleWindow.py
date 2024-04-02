@@ -9,7 +9,6 @@ from SettingsWindow import SettingsWindow
 class SubtitleWindow(QMainWindow):
     ################ Initialization ###############
 
-
     def __init__(self):
         super().__init__()
         self.initWindowStyling()
@@ -35,7 +34,6 @@ class SubtitleWindow(QMainWindow):
 
     def initLabel(self):
         self.label = QLabel("",self)
-
         if Profiles.getCurrentUser() is None:
             self.openSettingsMenu()
         self.updateWindowStyling()

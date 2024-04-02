@@ -122,7 +122,6 @@ class Profiles:
             'background-color' : "rgba(0,0,0,0.2)",
             'border-radius'    : "0px"
         }
-
         return userSettings
 
     def saveUserProfile(user: str,currentUserSettings: dict):
