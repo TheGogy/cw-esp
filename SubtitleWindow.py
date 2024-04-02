@@ -7,7 +7,7 @@ from SettingsWindow import SettingsWindow
 
 
 class SubtitleWindow(QMainWindow):
-    ################ Initialation ###############
+   ################ Initialization ###############
 
     def __init__(self):
         super().__init__()
@@ -33,7 +33,7 @@ class SubtitleWindow(QMainWindow):
     ################ Subtitle text ###############
 
     def initLabel(self):
-        self.label = QLabel("[Subtitles]",self)
+        self.label = QLabel("",self)
         if Profiles.getCurrentUser() is None:
             self.openSettingsMenu()
         self.updateWindowStyling()
@@ -98,7 +98,7 @@ class SubtitleWindow(QMainWindow):
 
     def openSettingsMenu(self):
         self.hide()
-        self.userSelector = SettingsWindow()
+        self.userSelector = SettingsWindow("profile")
         self.userSelector.exec_()
         if Profiles.getCurrentUser() is None:
             sys.exit()
