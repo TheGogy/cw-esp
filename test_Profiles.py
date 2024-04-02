@@ -1,7 +1,6 @@
 # Import modules
 from Profiles import Profiles
 from pathlib import Path
-import sys
 import pytest
 import yaml
 
@@ -148,7 +147,6 @@ def test_getUserProfiles():
             "DefaultPath": str(pytest.RUNTIME_DIR),
             "Users": {"test_user_1", "test_user_2", "test_user_3", "test_user_delete", "test_user_get_settings"}
     } 
-    sys.__stdout__.write(str(Profiles.getUserProfiles()))
     assert  curretUserProfiles == Profiles.getUserProfiles()
 
 # Test Profiles.generateDefaultSettings()
