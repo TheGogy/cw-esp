@@ -122,6 +122,7 @@ class Profiles:
             'background-color' : "rgba(0,0,0,0.2)",
             'border-radius'    : "0px"
         }
+
         return userSettings
 
     def saveUserProfile(user: str,currentUserSettings: dict):
@@ -245,5 +246,6 @@ class Profiles:
             shutil.rmtree("Models")
         if os.path.isdir("Users"):
             shutil.rmtree("Users")
+
 if __name__ == '__main__':
     Profiles.generateProfilesFile()

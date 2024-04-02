@@ -47,6 +47,7 @@ class InstallSettings(QVBoxLayout):
         self.installWorker.signals.interrupted.connect(self.modelChanged)
 
     def initDropdownMenu(self):
+
         currentModel = Profiles.getCurrentModel()
         self.modelSelector = QComboBox()
         self.modelSelector.setDuplicatesEnabled(False)
@@ -124,6 +125,7 @@ class InstallSettings(QVBoxLayout):
     def modelChanged(self):
         self.updateButtonText()
         self.updateNotesText()
+
 
     def getCurrentModelText(self):
         return re.findall(r'\[.*\] (.*)',self.modelSelector.currentText())[0]

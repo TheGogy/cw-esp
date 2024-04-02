@@ -164,6 +164,7 @@ class ProfileSettings(QGridLayout):
         # Ensure order is maintained for correct styling. 
         self.fontSelector.textChanged.connect(self.fontSelectorDictionary)
         self.formLayout.addRow("Font:", self.fontSelector)
+
         # CSS for Popup 
         completerListView = fontCompleter.popup()
         completerListView.setStyleSheet("background-color: #4C566A; color: #ffffff;")
@@ -259,6 +260,78 @@ class ProfileSettings(QGridLayout):
         value = self.currentUserSettings['border-radius'][:-2]
         self.borderRadiusSliderBox.itemAt(0).widget().setText(str(value))
 
+    ################ Background Colour ################
+
+    def initBackgroundrgba(self):
+        '''Initializes font rgba sliders and adds them to form'''
+        #adding fontrgba slider
+        backgroundRgbSlidersBox = QHBoxLayout()
+
+        # Styling Red Slider 
+        self.backgroundRedSliderBox = self.generateSliderBox(0,255,self.updateBackgroundSliderIndicators)
+        backgroundRgbSlidersBox.addLayout(self.backgroundRedSliderBox)
+        self.backgroundRedSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "red")))
+        
+        # Styling for Green Slider
+        self.backgroundGreenSliderBox = self.generateSliderBox(0, 255, self.updateBackgroundSliderIndicators)
+        backgroundRgbSlidersBox.addLayout(self.backgroundGreenSliderBox)
+        self.backgroundGreenSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "green")))
+
+        # Styling for blue slider
+        self.backgroundBlueSliderBox = self.generateSliderBox(0, 255, self.updateBackgroundSliderIndicators)
+        backgroundRgbSlidersBox.addLayout(self.backgroundBlueSliderBox)
+        self.backgroundBlueSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "blue")))
+
+        self.addRow("Background Colour:",backgroundRgbSlidersBox)
+        # add the font opacity slider
+        self.backgroundOpacityBox = self.generateSliderBox(0,100,self.updateSliderIndicators)
+        self.backgroundOpacityBox.itemAt(1).widget().setStyleSheet(generate_slider_style(generateGradient("white", "black")))
+        self.addRow("Background Opacity: ",self.backgroundOpacityBox)
+
+    def updateBackgroundSliderIndicators(self):
+        '''Updates the slider indicator and dictionary when a slider is moved'''
+        r = self.backgroundRedSliderBox.itemAt(1).widget().value()
+        g = self.backgroundGreenSliderBox.itemAt(1).widget().value()
+        b = self.backgroundBlueSliderBox.itemAt(1).widget().value()
+        a = self.backgroundOpacityBox.itemAt(1).widget().value() / 100
+
+        self.backgroundrgbaDictionary(f"rgba({r},{g},{b},{a})")
+        self.setBackgroundRgbaSliders()
+        self.saveQuitOff()
+
+    def backgroundrgbaDictionary(self,value: str):
+        '''Updates dictionary'''
+        self.currentUserSettings['background-color']  = value
+        self.saveQuitOff()
+
+    def setBackgroundRgbaSliders(self):
+        '''sets fonts and and indicator to a given rgba value'''
+        rgbaValues = re.findall(r'\d+[.]?\d*',self.currentUserSettings['background-color'])
+        self.backgroundRedSliderBox.itemAt(1).widget().setValue(int(rgbaValues[0]))
+        self.backgroundRedSliderBox.itemAt(0).widget().setText(rgbaValues[0])
+        self.backgroundGreenSliderBox.itemAt(1).widget().setValue(int(rgbaValues[1]))
+        self.backgroundGreenSliderBox.itemAt(0).widget().setText(rgbaValues[1])
+        self.backgroundBlueSliderBox.itemAt(1).widget().setValue(int(rgbaValues[2]))
+        self.backgroundBlueSliderBox.itemAt(0).widget().setText(rgbaValues[2])
+        self.backgroundOpacityBox.itemAt(1).widget().setValue(int(float(rgbaValues[3]) * 100))
+        self.backgroundOpacityBox.itemAt(0).widget().setText(rgbaValues[3])
+
+    def initBorderRadius(self):
+        self.borderRadiusSliderBox = self.generateSliderBox(0,25,self.updateBorderRadiusIndicator)
+        self.borderRadiusSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style("red"))
+        self.addRow("Border Radius:",self.borderRadiusSliderBox)
+
+    def updateBorderRadiusIndicator(self):
+        self.borderRadiusSliderBox.itemAt(0).widget().setText(str(self.borderRadiusSliderBox.itemAt(1).widget().value()))
+        self.borderRadiusDictionary()
+
+    def borderRadiusDictionary(self):
+        self.currentUserSettings['border-radius'] = str(self.borderRadiusSliderBox.itemAt(1).widget().value()) + "px"
+
+    def setBorderRadiusSlider(self):
+        value = self.currentUserSettings['border-radius'][:-2]
+        self.borderRadiusSliderBox.itemAt(0).widget().setText(str(value))
+
     ################ Deals with buttons ################
 
     def buttonInit(self):
@@ -347,6 +420,7 @@ class ProfileSettings(QGridLayout):
     def resetUserSettings(self):
         '''Sets the values of the sliders to the current user settings'''
         self.currentUserSettings = Profiles.getUserSettings(self.getOriginalUsername())
+        
         #Rgba font slider reset
         self.setFontRgbaSliders()
         self.setBackgroundRgbaSliders()
@@ -378,7 +452,8 @@ class ProfileSettings(QGridLayout):
         sliderBox.addWidget(slider)
         slider.valueChanged.connect(function)
         return sliderBox
-    ################ Event Handler ################
+
+      ################ Event Handler ################
 
     def resizeEvent(self,event):
         super().resizeEvent(event)
