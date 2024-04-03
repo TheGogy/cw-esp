@@ -1,5 +1,5 @@
-from InstallSettings import InstallWorker, InstallWorkerSignals, InstallSettings
-from Profiles import Profiles
+from src import InstallWorker, InstallWorkerSignals, InstallSettings
+from src import Profiles
 import pytest
 from PyQt5.QtWidgets import QComboBox, QPushButton
 
@@ -10,13 +10,12 @@ ssl._create_default_https_context = ssl._create_stdlib_context
 
 # SETUP and TEARDOWN #
 ####################################################################################
-@pytest.fixture(scope="session")
-def setup_function(scope='session'):
-    Profiles.generateProfilesFile()
+def setup_module():
+    Profiles()
 
-@pytest.fixture(scope="session")
-def teardown_function(scope='session'):
-    Profiles.emptyDatabase()
+def teardown_module():
+    self.profiles = Profiles()
+    self.profiles.emptyDatabase()
     
 class MockProfiles:
     @staticmethod
@@ -33,7 +32,7 @@ def mockProfiles(monkeypatch):
     monkeypatch.setattr('InstallSettings.Profiles', MockProfiles)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def installWorker():
     worker = InstallWorker()
     yield worker

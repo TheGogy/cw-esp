@@ -11,27 +11,29 @@ class InstallWorkerSignals(QObject):
     interrupted = pyqtSignal()
 
 class InstallWorker(QThread):
-    def __init__(self):
+    def __init__(self,profiles: Profiles):
         super().__init__()
         self.signals = InstallWorkerSignals()
         self.modelName = None
+        self.profiles = profiles
 
     @pyqtSlot()
     def run(self):
         self.signals.began.emit()
-        Profiles.installModel(self.modelName)
+        self.profiles.installModel(self.modelName)
         self.signals.finished.emit()
 
     def terminate(self):
         super().terminate()
-        if os.path.exists(Profiles.getAppDirectory() / "Models"/ "temp.zip"):
-            os.remove(Profiles.getAppDirectory()/ "Models" / "temp.zip")
+        if os.path.exists(self.profiles.getDatabaseDirectory() / "Models"/ "temp.zip"):
+            os.remove(self.profiles.getDatabaseDirectory()/ "Models" / "temp.zip")
         self.signals.interrupted.emit()
 
 class InstallSettings(QVBoxLayout):
-    def __init__(self,installWorker):
+    def __init__(self,installWorker,profiles: Profiles):
         super().__init__()
-        self.availableModels = Profiles.getAvailableModels()
+        self.profiles = profiles
+        self.availableModels = self.profiles.getAvailableModels()
         self.initInstallWorker(installWorker)
         self.formLayout = QFormLayout()
         self.initDropdownMenu()
@@ -47,7 +49,7 @@ class InstallSettings(QVBoxLayout):
         self.installWorker.signals.interrupted.connect(self.modelChanged)
 
     def initDropdownMenu(self):
-        currentModel = Profiles.getCurrentModel()
+        currentModel = self.profiles.getCurrentModel()
         self.modelSelector = QComboBox()
         self.modelSelector.setDuplicatesEnabled(False)
         if self.installWorker.isRunning():
@@ -61,7 +63,7 @@ class InstallSettings(QVBoxLayout):
         self.formLayout.addRow(" ",None)
 
     def initNotes(self):
-        availableModels = Profiles.getAvailableModels()
+        availableModels = self.profiles.getAvailableModels()
         gridLayout = QGridLayout()
         self.notes = QLabel(f"Notes:\n{availableModels[self.getCurrentModelText()][3]}")
         self.notes.setStyleSheet("font-size: 15px;background:rgba(0,0,0,0.2)")
@@ -88,8 +90,8 @@ class InstallSettings(QVBoxLayout):
         self.addLayout(buttonLayout)
 
     def installFunction(self):
-        if self.getCurrentModelText() in Profiles.getInstalledModels():
-            Profiles.selectModel(self.getCurrentModelText())
+        if self.getCurrentModelText() in self.profiles.getInstalledModels():
+            self.profiles.selectModel(self.getCurrentModelText())
             return
         self.installWorker.modelName = self.getCurrentModelText()
         self.installWorker.start()
@@ -97,12 +99,12 @@ class InstallSettings(QVBoxLayout):
     def deleteButtonFunction(self):
         if self.installWorker.isRunning():
             self.installWorker.terminate()
-        elif self.getCurrentModelText() in Profiles.getInstalledModels():   
-            Profiles.deleteModel(self.getCurrentModelText())
+        elif self.getCurrentModelText() in self.profiles.getInstalledModels():   
+            self.profiles.deleteModel(self.getCurrentModelText())
         self.updateButtonText()
 
     def updateButtonText(self):
-        installedModels = Profiles.getInstalledModels()
+        installedModels = self.profiles.getInstalledModels()
         if self.installWorker.isRunning():
             self.deleteButton.setText("Cancel")
             self.installButton.setText("Installing")
@@ -117,7 +119,7 @@ class InstallSettings(QVBoxLayout):
             return
     
     def updateNotesText(self):
-        availableModels = Profiles.getAvailableModels()
+        availableModels = self.profiles.getAvailableModels()
         self.notes.setText(f"Notes:\n{availableModels[self.getCurrentModelText()][3]}")
         self.license.setText(f"License: {availableModels[self.getCurrentModelText()][4]}")
 

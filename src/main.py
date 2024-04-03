@@ -16,14 +16,13 @@ from SettingsWindow import SettingsWindow
 class MicrophoneThread(QThread):
     def __init__(self):
         super().__init__()
-        self.modelPath = Profiles.getCurrentModelPath()
-        if self.modelPath is None:
-            settings = SettingsWindow("model")
+        self.profiles = Profiles()
+        if self.profiles.getCurrentModelPath() is None:
+            settings = SettingsWindow("model",self.profiles)
             settings.exec_()
-        self.modelPath = Profiles.getCurrentModelPath()
-        if self.modelPath is None:
+        if self.profiles.getCurrentModelPath() is None:
             sys.exit()
-        self.window = SubtitleWindow()
+        self.window = SubtitleWindow(self.profiles)
         self.window.show()
 
     def run(self):
@@ -42,7 +41,7 @@ class MicrophoneThread(QThread):
             q.put(bytes(indata))
 
         # build the model and recognizer objects.
-        model = Model(str(self.modelPath))
+        model = Model(str(self.profiles.getCurrentModelPath()))
         recognizer = KaldiRecognizer(model, samplerate)
         recognizer.SetWords(False)
 

@@ -9,8 +9,12 @@ from SettingsWindow import SettingsWindow
 class SubtitleWindow(QMainWindow):
     ################ Initialization ###############
 
-    def __init__(self):
+    def __init__(self,profiles: Profiles):
         super().__init__()
+        if profiles is not None:
+            self.profiles = profiles
+        else:
+            self.profiles = Profiles()
         self.initWindowStyling()
         self.initLabel()
         self.initMouseTracking()
@@ -26,7 +30,7 @@ class SubtitleWindow(QMainWindow):
         self.setGeometry(300, 100, 1000, 100)
 
     def updateWindowStyling(self):
-        self.label.setStyleSheet(Profiles.getCurrentUserCSS())
+        self.label.setStyleSheet(self.profiles.getCurrentUserCSS())
         self.label.setGeometry(0, 0, self.width(), self.height())
         self.update()
 
@@ -34,7 +38,7 @@ class SubtitleWindow(QMainWindow):
 
     def initLabel(self):
         self.label = QLabel("",self)
-        if Profiles.getCurrentUser() is None:
+        if self.profiles.getCurrentUser() is None:
             self.openSettingsMenu()
         self.updateWindowStyling()
         
@@ -98,9 +102,9 @@ class SubtitleWindow(QMainWindow):
 
     def openSettingsMenu(self):
         self.hide()
-        self.userSelector = SettingsWindow("profile")
+        self.userSelector = SettingsWindow("profile",self.profiles)
         self.userSelector.exec_()
-        if Profiles.getCurrentUser() is None:
+        if self.profiles.getCurrentUser() is None:
             sys.exit()
         self.updateWindowStyling()
         self.show()

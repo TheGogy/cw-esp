@@ -3,8 +3,8 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QPushButton, QApplication
 from PyQt5.QtTest import QTest
 from PyQt5.QtCore import Qt
-from SettingsWindow import SettingsWindow
-from Profiles import Profiles
+from src.SettingsWindow import SettingsWindow
+from src.Profiles import Profiles
 
 @pytest.fixture(scope="session")
 def setup_function(scope='session'):
@@ -15,12 +15,12 @@ def teardown_function(scope='session'):
     Profiles.emptyDatabase()
 
 @pytest.fixture
-def ProfileSettings():
+def ProfileSettings(qtbot):
     '''Create instance of SettingsProfileSettings'''
-    app = QApplication([]) 
     test_ProfileSettings = SettingsWindow()
     yield test_ProfileSettings.RightColumnLayout
 
+    
 
 @pytest.mark.order(1)
 def test_initLayout(ProfileSettings,setup_function):

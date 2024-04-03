@@ -13,30 +13,34 @@ class SettingsWindow(QDialog):
 
     ################ Initialization ################
 
-    def __init__(self, name=None):
+    def __init__(self, name=None,profiles = None):
         super().__init__()
+        if profiles is not None:
+            self.profiles = profiles
+        else:
+            self.profiles = Profiles()
         self.setGeometry(100,100,835,560)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.initLeftColumnLayout()
         self.leftColumnLayout = QFormLayout()
-        self.installWorker = InstallWorker()
+        self.installWorker = InstallWorker(self.profiles)
         if name == None:
-            self.RightColumnLayout = ProfileSettings()
+            self.RightColumnLayout = ProfileSettings(self.profiles)
             self.RightColumnLayout.closed.connect(self.close)
             self.setWindowTitle("Settings Window")
         if name == "profile":
-            self.RightColumnLayout = ProfileSettings()
+            self.RightColumnLayout = ProfileSettings(self.profiles)
             self.setWindowTitle("Create User.")
             self.RightColumnLayout.closed.connect(self.close)
         if name == "model":
-            self.RightColumnLayout = InstallSettings(self.installWorker)
+            self.RightColumnLayout = InstallSettings(self.installWorker,self.profiles)
             self.setWindowTitle("Download a model.")
 
         self.layout.addLayout(self.leftColumnLayout,1)
         self.layout.addLayout(self.RightColumnLayout,100)
         self.communicate = Communicate()
-        self.setStyleSheet(Profiles.getStyleSheet())
+        self.setStyleSheet(self.profiles.getStyleSheet())
 
     def initLeftColumnLayout(self):
         self.leftColumnLayout = QHBoxLayout()
@@ -53,14 +57,15 @@ class SettingsWindow(QDialog):
         if isinstance(self.RightColumnLayout,InstallSettings):
             return
         self.deleteLayout(self.RightColumnLayout)
-        self.RightColumnLayout = InstallSettings(self.installWorker)
+        self.RightColumnLayout = InstallSettings(self.installWorker,self.profiles)
         self.layout.addLayout(self.RightColumnLayout,100)
 
     def initProfileSettings(self):
         if isinstance(self.RightColumnLayout,ProfileSettings):
             return
         self.deleteLayout(self.RightColumnLayout)
-        self.RightColumnLayout = ProfileSettings()
+        self.RightColumnLayout = ProfileSettings(self.profiles)
+        self.RightColumnLayout.closed.connect(self.close)
         self.layout.addLayout(self.RightColumnLayout,100)
 
 
