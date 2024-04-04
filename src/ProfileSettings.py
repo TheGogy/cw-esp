@@ -427,5 +427,3 @@ class ProfileSettings(QGridLayout):
     def changedEvent(self): 
         self.updatePreview()
         self.saveQuitOff()
-
-
