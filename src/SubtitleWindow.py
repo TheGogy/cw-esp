@@ -2,8 +2,8 @@ import sys
 from PyQt5.QtWidgets import QApplication, QLabel, QMenu, QAction, QMainWindow
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFontMetrics
-from Profiles import Profiles
-from SettingsWindow import SettingsWindow
+from src.Profiles import Profiles
+from src.SettingsWindow import SettingsWindow
 
 
 class SubtitleWindow(QMainWindow):

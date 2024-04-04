@@ -6,9 +6,9 @@ import sys
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread
 import json
-from SubtitleWindow import SubtitleWindow
-from Profiles import Profiles
-from SettingsWindow import SettingsWindow
+from src.SubtitleWindow import SubtitleWindow
+from src.Profiles import Profiles
+from src.SettingsWindow import SettingsWindow
 
 """This script processes audio input from the microphone and displays the transcribed text."""
 

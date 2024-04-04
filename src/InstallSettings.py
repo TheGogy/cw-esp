@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QPushButton,QGridLayout,QVBoxLayout,QHBoxLayout,QCom
 from PyQt5.QtCore import  pyqtSignal, QObject, pyqtSlot, QThread,Qt
 import os
 import re
-from Profiles import Profiles
+from src.Profiles import Profiles
 import re
 
 class InstallWorkerSignals(QObject):

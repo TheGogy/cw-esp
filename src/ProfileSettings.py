@@ -2,12 +2,14 @@
 from PyQt5.QtWidgets import QPushButton,QHBoxLayout, QFormLayout,QGridLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
 from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator
-from Styles.SliderStyle import generate_slider_style, generateGradient
+from src.Styles.SliderStyle import generate_slider_style, generateGradient
 ### General Library imports
 import sys
 import re
 ### Project Imports
-from Profiles import Profiles
+from src.Profiles import Profiles
+
+
 class ProfileSettings(QGridLayout):
 
     ################ Constants ################

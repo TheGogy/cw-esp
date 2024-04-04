@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QApplication, QPushButton,QDialog,QFormLayout,QHBoxLayout, QVBoxLayout
 from PyQt5.QtCore import  pyqtSignal, QObject, QTextStream, QFile
 
-from Profiles import Profiles
-from ProfileSettings import ProfileSettings
-from InstallSettings import InstallSettings,InstallWorker 
+from src.Profiles import Profiles
+from src.ProfileSettings import ProfileSettings
+from src.InstallSettings import InstallSettings,InstallWorker 
 
 
 class Communicate(QObject):
