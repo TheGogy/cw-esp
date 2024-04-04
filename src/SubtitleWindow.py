@@ -2,15 +2,19 @@ import sys
 from PyQt5.QtWidgets import QApplication, QLabel, QMenu, QAction, QMainWindow
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFontMetrics
-from Profiles import Profiles
-from SettingsWindow import SettingsWindow
+from src.Profiles import Profiles
+from src.SettingsWindow import SettingsWindow
 
 
 class SubtitleWindow(QMainWindow):
     ################ Initialization ###############
 
-    def __init__(self):
+    def __init__(self,profiles: Profiles):
         super().__init__()
+        if profiles is not None:
+            self.profiles = profiles
+        else:
+            self.profiles = Profiles()
         self.initWindowStyling()
         self.initLabel()
         self.initMouseTracking()
@@ -26,7 +30,7 @@ class SubtitleWindow(QMainWindow):
         self.setGeometry(300, 100, 1000, 100)
 
     def updateWindowStyling(self):
-        self.label.setStyleSheet(Profiles.getCurrentUserCSS())
+        self.label.setStyleSheet(self.profiles.getCurrentUserCSS())
         self.label.setGeometry(0, 0, self.width(), self.height())
         self.update()
 
@@ -34,18 +38,20 @@ class SubtitleWindow(QMainWindow):
 
     def initLabel(self):
         self.label = QLabel("",self)
-        if Profiles.getCurrentUser() is None:
+        if self.profiles.getCurrentUser() is None:
             self.openSettingsMenu()
         self.updateWindowStyling()
         
-    def setSubtitleText(self, text):
+    def setSubtitleText(self, text,windowWidth = None):
         """
         updates subtitles to ensure they do not run of the screen
         needs updating to accomdate multiple lines of text
         """
+        if windowWidth is None:
+            windowWidth = self.width()
         size = QFontMetrics(self.label.font())
         text_split = text.split(" ")
-        while size.width(text) > self.width() and len(text_split) > 1:
+        while size.width(text) > windowWidth and len(text_split) > 1:
             # removes the oldest word until it fits
             text_split = text.split(" ")
             text_split = text_split[1:]
@@ -98,9 +104,9 @@ class SubtitleWindow(QMainWindow):
 
     def openSettingsMenu(self):
         self.hide()
-        self.userSelector = SettingsWindow("profile")
+        self.userSelector = SettingsWindow("profile",self.profiles)
         self.userSelector.exec_()
-        if Profiles.getCurrentUser() is None:
+        if self.profiles.getCurrentUser() is None:
             sys.exit()
         self.updateWindowStyling()
         self.show()

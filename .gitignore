@@ -1,7 +1,8 @@
+
 *venv*/
 Models/*model*
 Users/*.css
 __pycache__
-# test.py
 Profiles.yml
 .DS_Store
+.coverage

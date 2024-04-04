@@ -1,6 +1,9 @@
-from InstallSettings import InstallWorker, InstallWorkerSignals, InstallSettings
-from Profiles import Profiles
+from src import InstallWorker, InstallWorkerSignals, InstallSettings
+from src import Profiles
 import pytest
+import os
+import shutil
+from pathlib import Path
 from PyQt5.QtWidgets import QComboBox, QPushButton
 
 
@@ -10,53 +13,42 @@ ssl._create_default_https_context = ssl._create_stdlib_context
 
 # SETUP and TEARDOWN #
 ####################################################################################
-@pytest.fixture(scope="session")
-def setup_function(scope='session'):
-    Profiles.generateProfilesFile()
 
-@pytest.fixture(scope="session")
-def teardown_function(scope='session'):
-    Profiles.emptyDatabase()
-    
-class MockProfiles:
-    @staticmethod
-    def installModel(model_name):
-        pass
+pytest.RUNTIME_DIR = Path(__file__).parent / "InstallSettingsTest"
 
-    @staticmethod
-    def getInstalledModels():
-        return []
+@pytest.fixture(scope="module")
+def profiles():
+    profiles = Profiles(pytest.RUNTIME_DIR)
+    yield profiles 
 
+def setup_module():
+    if not os.path.exists(pytest.RUNTIME_DIR):
+        os.mkdir(pytest.RUNTIME_DIR)
+    profiles = Profiles(pytest.RUNTIME_DIR)
 
-@pytest.fixture
-def mockProfiles(monkeypatch):
-    monkeypatch.setattr('InstallSettings.Profiles', MockProfiles)
+def teardown_module():
+    if os.path.isdir(pytest.RUNTIME_DIR):
+        shutil.rmtree(pytest.RUNTIME_DIR)
 
 
 @pytest.fixture
-def installWorker():
-    worker = InstallWorker()
+def installWorker(qtbot,profiles,scope="module"):
+    worker = InstallWorker(profiles)
     yield worker
 
 @pytest.fixture
-def installSettings(qtbot, installWorker):
-    settings = InstallSettings(installWorker)
+def installSettings(qtbot, installWorker,profiles):
+    settings = InstallSettings(installWorker,profiles)
     yield settings
 
-class FakeProfiles:
-    @staticmethod
-    def getInstalledModels():
-        # for update button text test
-        return []
 
 ####################################################################################
 
 @pytest.mark.order(1)
-def testRun(qtbot, installWorker):
+def testRun(qtbot, installWorker,installSettings):
     ''' tests basic core functionality of button click and response,
         modify if additional test needed
     '''
-    installSettings = InstallSettings(installWorker)
     with qtbot.waitSignal(installSettings.installButton.clicked):
         installSettings.installButton.click()
     # can also add qbot wait signals if you want
@@ -76,14 +68,12 @@ def testTerminate(installWorker):
     # assert installWorker.isRunning() is False
 
 @pytest.mark.order(3)
-def testInitalisationInitInstallWorker(installWorker):
+def testInitalisationInitInstallWorker(installWorker,installSettings):
     # checks initialisation
-    installSettings = InstallSettings(installWorker)
     assert installSettings.installWorker == installWorker
 
 @pytest.mark.order(4)
-def testBeginInitInstallWorker(installWorker):
-    installSettings = InstallSettings(installWorker)
+def testBeginInitInstallWorker(installWorker,installSettings):
     assert installSettings.installWorker == installWorker
     # so basically hasattr checks if installSettings.installWorker.signals has the attribute began.
     # works like assertEquals.
@@ -91,14 +81,14 @@ def testBeginInitInstallWorker(installWorker):
     assert hasattr(installSettings.installWorker.signals, 'began')
 
 @pytest.mark.order(5)
-def testBeginInitInstallWorker(installWorker):
-    installSettings = InstallSettings(installWorker)
+def testBeginInitInstallWorker(installWorker,profiles):
+    installSettings = InstallSettings(installWorker,profiles)
     assert installSettings.installWorker == installWorker
     assert hasattr(installSettings.installWorker.signals, 'finished')
 
 @pytest.mark.order(6)
-def testInterruptedInitInstallWorker(installWorker):
-    installSettings = InstallSettings(installWorker)
+def testInterruptedInitInstallWorker(installWorker,profiles):
+    installSettings = InstallSettings(installWorker,profiles)
     assert installSettings.installWorker == installWorker
     assert hasattr(installSettings.installWorker.signals, 'interrupted')
 
@@ -123,28 +113,24 @@ def testInitButtonsInitialisation(installSettings):
 
 @pytest.mark.order(9)
 def testInitButtonsFunctionsInstall(installSettings):
-    # qbot is a little funky so instead call function directly
-    installSettings.installFunction()
     # test install button, should be enough 
     assert installSettings.installButton.text() == "Install"
 
 @pytest.mark.order(10)
-def testInitButtonsFunctionsDelete(installSettings):
+def testInitButtonsFunctionsDelete(qtbot,installSettings):
     # qbot is a little funky so instead call function directly
-    installSettings.installFunction() # 
+    installSettings.installFunction() 
     # now test the delete functions
     installSettings.deleteButtonFunction()
     assert installSettings.deleteButton.isEnabled()
 
 @pytest.mark.order(11)
-def testInstallFunction(installWorker):
-    installSettings = InstallSettings(installWorker)
+def testInstallFunction(installWorker,installSettings):
     installSettings.installFunction()
     assert installWorker.modelName == installSettings.getCurrentModelText()
 
 @pytest.mark.order(12)
-def testDeleteButtonFunction(installWorker):
-    installSettings = InstallSettings(installWorker)
+def testDeleteButtonFunction(installWorker,installSettings):
     installSettings.deleteButtonFunction()
     assert installSettings.installButton.text() == "Install"
     assert installSettings.deleteButton.isEnabled() == True
@@ -152,8 +138,6 @@ def testDeleteButtonFunction(installWorker):
 @pytest.mark.order(13)
 def test_updateButtonTextNotInstalled(installSettings):
     # just setup for a non installed model simulation
-    fake_profiles = FakeProfiles()
-    installSettings.Profiles = fake_profiles
     installSettings.modelSelector.setCurrentText('Model2')
     # check expected results based on updateButtonText
     installSettings.updateButtonText()

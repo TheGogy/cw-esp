@@ -3,29 +3,30 @@ import queue
 import sounddevice as sd
 from vosk import Model, KaldiRecognizer
 import sys
-from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread
 import json
-from SubtitleWindow import SubtitleWindow
-from Profiles import Profiles
-from SettingsWindow import SettingsWindow
+from src.SubtitleWindow import SubtitleWindow
+from src.Profiles import Profiles
+from src.SettingsWindow import SettingsWindow
 
 """This script processes audio input from the microphone and displays the transcribed text."""
 
 
 class MicrophoneThread(QThread):
-    def __init__(self):
+    def __init__(self,profiles=None,subtitleWindow=None):
         super().__init__()
-        self.modelPath = Profiles.getCurrentModelPath()
-        if self.modelPath is None:
-            settings = SettingsWindow("model")
+        self.profiles = profiles
+        if self.profiles is None:
+            self.profiles = Profiles()
+        if self.profiles.getCurrentModelPath() is None:
+            settings = SettingsWindow("model",self.profiles)
             settings.exec_()
-        self.modelPath = Profiles.getCurrentModelPath()
-        if self.modelPath is None:
+        if self.profiles.getCurrentModelPath() is None:
             sys.exit()
-        self.window = SubtitleWindow()
-        self.window.show()
-
+        self.window = subtitleWindow
+        if self.window is None:
+            self.window = SubtitleWindow(self.profiles)
+            self.window.show()
     def run(self):
         # get the samplerate - this is needed by the Kaldi recognizer
         device_info = sd.query_devices(sd.default.device[0], "input")
@@ -42,7 +43,7 @@ class MicrophoneThread(QThread):
             q.put(bytes(indata))
 
         # build the model and recognizer objects.
-        model = Model(str(self.modelPath))
+        model = Model(str(self.profiles.getCurrentModelPath()))
         recognizer = KaldiRecognizer(model, samplerate)
         recognizer.SetWords(False)
 
@@ -68,9 +69,3 @@ class MicrophoneThread(QThread):
         except Exception as e:
             print(str(e))
 
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    microphoneThread = MicrophoneThread()
-    microphoneThread.start()
-    sys.exit(app.exec_())

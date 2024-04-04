@@ -36,66 +36,75 @@ class Profiles:
     ################ Database Queries ################
 
     ###PUBLIC###
+    def __init__(self,databaseDirectory = None):
+        if databaseDirectory == None:
+            self.databaseDirectory = Profiles.getAppDirectory()
+        else:   
+            self.databaseDirectory = Path(databaseDirectory)
+        self.generateProfilesFile()
+
     def getAppDirectory():
         if hasattr(sys,'_MEIPASS'):
             return Path(os.path.dirname(sys.executable))
         else:
             return Path(__file__).resolve().parent
 
-    def getStyleSheet():
+    def getDatabaseDirectory(self):
+        return self.databaseDirectory
+    def getStyleSheet(self):
         '''Opening and Reading Stylesheet'''
-        filename =  Profiles.getAppDirectory() / "Styles" / "CssFile.qss"
+        filename = self.databaseDirectory / "Styles" / "CssFile.qss"
         with open(str(filename),"r") as file:
             return file.read()
 
 
-    def getCurrentUserCSS():
-        with open(Profiles.getUserPath(Profiles.getCurrentUser()), "r") as file:
+    def getCurrentUserCSS(self):
+        with open(self.getUserPath(self.getCurrentUser()), "r") as file:
             return "".join(file.readlines())
 
-    def getUserList():
-        return list(Profiles.getUserProfiles()['Users'])
+    def getUserList(self):
+        return list(self.getUserProfiles()['Users'])
 
-    def getCurrentUser():
-        return Profiles.getUserProfiles()['Current']
+    def getCurrentUser(self):
+        return self.getUserProfiles()['Current']
 
-    def getCurrentUserSettings():
-        return Profiles.getUserSettings(Profiles.getCurrentUser())
+    def getCurrentUserSettings(self):
+        return self.getUserSettings(self.getCurrentUser())
 
-    def userExists(user = None):
-        return user in Profiles.getUserList()
+    def userExists(self,user = None):
+        return user in self.getUserList()
 
-    def getUserSettings(user = None):
-        userProfiles = Profiles.getUserProfiles()
-        if not Profiles.userExists(user):
+    def getUserSettings(self,user = None):
+        userProfiles = self.getUserProfiles()
+        if not self.userExists(user):
             userSettings = Profiles.generateDefaultSettings()
         else:
             userSettings = {}
-            with open(Profiles.getUserPath(user),"r") as cssFile:
+            with open(self.getUserPath(user),"r") as cssFile:
                 cssLines = cssFile.readlines()[1:-1]
                 for line in cssLines:
                     entry = (line.strip()).split(": ")
                     userSettings[entry[0]] = entry[1][:-1]
         return userSettings
 
-    def getDefaultPath():
-        return Path(Profiles.getUserProfiles()["DefaultPath"])
+    def getDefaultPath(self):
+        return Path(self.getUserProfiles()["DefaultPath"])
 
     ###PRIVATE###
 
-    def getUserPath(user = None):
-        defaultPath = Path(Profiles.getUserProfiles()["DefaultPath"])
+    def getUserPath(self,user = None):
+        defaultPath = Path(self.getUserProfiles()["DefaultPath"])
         return defaultPath / "Users" / f"{user}.css"
 
-    def getUserProfiles():
-        profilesPath =  Profiles.getAppDirectory() / "Profiles.yml"
+    def getUserProfiles(self):
+        profilesPath =  self.databaseDirectory / "Profiles.yml"
         if not Path(profilesPath).exists():
             Profiles.generateProfilesFile()
         try:
             with open(profilesPath, "r") as profilesFile:
                 profiles = yaml.safe_load(profilesFile)
         except (FileNotFoundError, yaml.YAMLError):
-            Profiles.generateProfilesFile()
+            self.generateProfilesFile()
         with open(profilesPath, "r") as profilesFile:
             profiles = yaml.safe_load(profilesFile)
         return profiles
@@ -104,15 +113,15 @@ class Profiles:
 
     ###PUBLIC###
 
-    def saveProfilesFile(userProfiles):
-        profilesPath = Profiles.getAppDirectory() / "Profiles.yml"
+    def saveProfilesFile(self,userProfiles):
+        profilesPath = self.databaseDirectory / "Profiles.yml"
         with open(profilesPath, 'w') as file:
             yaml.dump(userProfiles, file)
 
-    def addUser(user):
-        userProfiles = Profiles.getUserProfiles()
+    def addUser(self,user):
+        userProfiles = self.getUserProfiles()
         userProfiles['Users'].add(user)
-        Profiles.saveProfilesFile(userProfiles)
+        self.saveProfilesFile(userProfiles)
 
     def generateDefaultSettings():
         userSettings = {
@@ -124,29 +133,29 @@ class Profiles:
         }
         return userSettings
 
-    def saveUserProfile(user: str,currentUserSettings: dict):
-        userProfilePath = Profiles.getUserPath(user)
-        cssString = Profiles.convertToCSS(currentUserSettings)
+    def saveUserProfile(self,user: str,currentUserSettings: dict):
+        userProfilePath = self.getUserPath(user)
+        cssString = self.convertToCSS(currentUserSettings)
         with open(userProfilePath, 'w') as userFile:
             userFile.write(cssString)
-        if not Profiles.userExists(user):
-            Profiles.addUser(user)
-        Profiles.setCurrentUser(user)
+        if not self.userExists(user):
+            self.addUser(user)
+        self.setCurrentUser(user)
 
-    def convertToCSS(userSettings: dict):
+    def convertToCSS(self,userSettings: dict):
         cssString = "QLabel {\n"
         for element in userSettings.keys():
             cssString += f"{element}: {userSettings[element]};\n"
         cssString += "}"
         return cssString
 
-    def deleteUser(user: str):
-        userProfiles = Profiles.getUserProfiles()
-        if Profiles.userExists(user):
-            os.remove(Profiles.getUserPath(user))
+    def deleteUser(self,user: str):
+        userProfiles = self.getUserProfiles()
+        if self.userExists(user):
+            os.remove(self.getUserPath(user))
             userProfiles['Users'].remove(user)
             userProfiles['Current'] = None
-            Profiles.saveProfilesFile(userProfiles)
+            self.saveProfilesFile(userProfiles)
 
 
     ''' Profiles.yml
@@ -154,8 +163,8 @@ class Profiles:
     Users: set of current users
     DefaultPath: default path new users will be saved to
     '''
-    def generateProfilesFile():
-        defaultPath = Profiles.getAppDirectory()
+    def generateProfilesFile(self):
+        defaultPath = self.databaseDirectory
         data = {
             'Current': None,
             'Users': set(),
@@ -173,13 +182,14 @@ class Profiles:
             os.mkdir(modelPath)
         data['availableModels'] = Profiles.generateAvailableModels()
         profilesPath = defaultPath / "Profiles.yml"
-        with open(profilesPath, 'w') as file:
-            yaml.dump(data, file, default_flow_style=False)
+        if not os.path.exists(profilesPath):
+            with open(profilesPath, 'w') as file:
+                yaml.dump(data, file, default_flow_style=False)
 
-    def setCurrentUser(user: str):
-        userProfiles = Profiles.getUserProfiles()
+    def setCurrentUser(self,user: str):
+        userProfiles = self.getUserProfiles()
         userProfiles['Current'] = user
-        Profiles.saveProfilesFile(userProfiles)
+        self.saveProfilesFile(userProfiles)
 
     def generateAvailableModels():
         availableModels = {}
@@ -188,36 +198,36 @@ class Profiles:
         return availableModels
 
 
-    def getModelUrls():
-        return Profiles.getUserProfiles()['availableModels']
+    def getModelUrls(self):
+        return self.getUserProfiles()['availableModels']
 
-    def getAvailableModels():
-        return Profiles.getUserProfiles()['availableModels']
+    def getAvailableModels(self):
+        return self.getUserProfiles()['availableModels']
 
-    def getInstalledModels():
-        return list(Profiles.getUserProfiles()['installedModels'])
+    def getInstalledModels(self):
+        return list(self.getUserProfiles()['installedModels'])
 
-    def getCurrentModel():
-        return Profiles.getUserProfiles()['CurrentModel']
+    def getCurrentModel(self):
+        return self.getUserProfiles()['CurrentModel']
 
-    def installModel(modelName: str):
+    def installModel(self,modelName):
         try:
-            modelUrl = Profiles.getModelUrls()[modelName][0]
+            modelUrl = self.getModelUrls()[modelName][0]
         except KeyError:
             raise ValueError("Model not available.")
-        defaultPath = Profiles.getDefaultPath()
+        defaultPath = self.getDatabaseDirectory()
         filename = defaultPath / "Models" / "temp.zip"
         urlretrieve(modelUrl,filename)
         with ZipFile(filename, "r") as zObject:
-            zObject.extractall("Models")
+            zObject.extractall(defaultPath / "Models")
         os.remove(filename)
-        profiles = Profiles.getUserProfiles()
+        profiles = self.getUserProfiles()
         profiles['CurrentModel'] = modelName
         profiles['installedModels'].add(modelName)
-        Profiles.saveProfilesFile(profiles)
+        self.saveProfilesFile(profiles)
 
-    def getCurrentModelPath():
-        profiles = Profiles.getUserProfiles()
+    def getCurrentModelPath(self):
+        profiles = self.getUserProfiles()
         defaultPath = Path(profiles["DefaultPath"])
         currentModel = profiles["CurrentModel"]
         if currentModel is not None:
@@ -225,26 +235,18 @@ class Profiles:
         else:
             return None
 
-    def deleteModel(modelName: str): 
-        modelsFolder = Profiles.getDefaultPath() / "Models"
-        profiles = Profiles.getUserProfiles()
+    def deleteModel(self,modelName: str): 
+        modelsFolder = self.getDefaultPath() / "Models"
+        profiles = self.getUserProfiles()
         profiles['installedModels'].remove(modelName)
         profiles['CurrentModel'] = None
-        Profiles.saveProfilesFile(profiles)
+        self.saveProfilesFile(profiles)
         shutil.rmtree(modelsFolder / modelName)
 
-    def selectModel(modelName: str):
-        profiles = Profiles.getUserProfiles()
+    def selectModel(self,modelName: str):
+        profiles = self.getUserProfiles()
         profiles['CurrentModel'] = modelName
-        Profiles.saveProfilesFile(profiles)
-
-    def emptyDatabase():
-        if os.path.isfile("Profiles.yml"):
-            os.remove("Profiles.yml")
-        if os.path.isdir("Models"):
-            shutil.rmtree("Models")
-        if os.path.isdir("Users"):
-            shutil.rmtree("Users")
+        self.saveProfilesFile(profiles)
 
 if __name__ == '__main__':
     Profiles.generateProfilesFile()

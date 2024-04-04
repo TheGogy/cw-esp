@@ -1,0 +1,7 @@
+QLabel {
+color: rgba(255,255,255,1.0);
+font-family: JetBrains Mono;
+font-size: 12px;
+background-color: rgba(0,0,0,0.2);
+border-radius: 0px;
+}

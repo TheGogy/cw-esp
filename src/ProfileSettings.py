@@ -2,12 +2,14 @@
 from PyQt5.QtWidgets import QPushButton,QHBoxLayout, QFormLayout,QGridLayout,QCompleter,QLineEdit,QSlider,QLabel,QComboBox
 from PyQt5.QtCore import  pyqtSignal, QObject,QRect,QEvent,Qt
 from PyQt5.QtGui import QFontDatabase,QDoubleValidator
-from Styles.SliderStyle import generate_slider_style, generateGradient
+from src.Styles.SliderStyle import generate_slider_style, generateGradient
 ### General Library imports
 import sys
 import re
 ### Project Imports
-from Profiles import Profiles
+from src.Profiles import Profiles
+
+
 class ProfileSettings(QGridLayout):
 
     ################ Constants ################
@@ -21,11 +23,12 @@ class ProfileSettings(QGridLayout):
 
     ################ Initialation ###############
 
-    def __init__(self):
+    def __init__(self,profiles: Profiles):
         super().__init__()
+        self.profiles = profiles
         self.formLayout = QFormLayout()
         self.addLayout(self.formLayout,0,0)
-        self.currentUserSettings = Profiles.getCurrentUserSettings()
+        self.currentUserSettings = self.profiles.getCurrentUserSettings()
         self.initUserDropdownMenu()
         self.initErrorMessage()
         self.initFontrgba()
@@ -58,8 +61,8 @@ class ProfileSettings(QGridLayout):
     def fillDropDownMenu(self):
         '''Re-populates the DropDownMenu'''
         self.DropDownMenu.clear()
-        users = sorted(Profiles.getUserList()) # Hacky fix because setduplicatesEnabled not working fo reasons
-        currentUser = Profiles.getCurrentUser()
+        users = sorted(self.profiles.getUserList()) # Hacky fix because setduplicatesEnabled not working fo reasons
+        currentUser = self.profiles.getCurrentUser()
         if currentUser is not None:
             self.DropDownMenu.addItem(currentUser)
             users.remove(currentUser) 
@@ -78,7 +81,7 @@ class ProfileSettings(QGridLayout):
         if self.DropDownMenu.currentText() == ProfileSettings.NEW_USER_MESSAGE:
             self.DropDownMenu.setEditable(True)
             self.DropDownMenu.setCurrentText("")
-            self.DropDownMenu.setStyleSheet(Profiles.getStyleSheet())
+            self.DropDownMenu.setStyleSheet(self.profiles.getStyleSheet())
             
     ################ Error Message ################
 
@@ -93,10 +96,10 @@ class ProfileSettings(QGridLayout):
     def updatePreview(self):
         defaultCSS = Profiles.generateDefaultSettings()
         defaultCSS['color'] = "red"
-        self.errorMessage.setStyleSheet(Profiles.convertToCSS(defaultCSS))
+        self.errorMessage.setStyleSheet(self.profiles.convertToCSS(defaultCSS))
         if not self.validProfile():
             return
-        self.errorMessage.setStyleSheet(Profiles.convertToCSS(self.currentUserSettings))
+        self.errorMessage.setStyleSheet(self.profiles.convertToCSS(self.currentUserSettings))
       
 
     ################ Deals with font colour ################ 
@@ -274,7 +277,7 @@ class ProfileSettings(QGridLayout):
     def initBorderRadius(self):
         self.borderRadiusSliderBox = self.generateSliderBox(0,25,self.updateBorderRadiusIndicator)
         self.borderRadiusSliderBox.itemAt(1).widget().setStyleSheet(generate_slider_style("red"))
-        self.addRow("Border Radius:",self.borderRadiusSliderBox)
+        self.formLayout.addRow("Border Radius:",self.borderRadiusSliderBox)
 
     def updateBorderRadiusIndicator(self):
         self.borderRadiusSliderBox.itemAt(0).widget().setText(str(self.borderRadiusSliderBox.itemAt(1).widget().value()))
@@ -310,8 +313,8 @@ class ProfileSettings(QGridLayout):
             return
          # Remove old username from database if name has changed
         if self.getEditedUsername() != self.getOriginalUsername():
-            Profiles.deleteUser(self.getOriginalUsername())
-        Profiles.saveUserProfile(self.getEditedUsername(), self.currentUserSettings)
+            self.profiles.deleteUser(self.getOriginalUsername())
+        self.profiles.saveUserProfile(self.getEditedUsername(), self.currentUserSettings)
         self.fillDropDownMenu()
         if self.saveQuit: 
             self.closed.emit()
@@ -330,14 +333,14 @@ class ProfileSettings(QGridLayout):
         if self.getEditedUsername() == "":
             defaultCSS = Profiles.generateDefaultSettings()
             defaultCSS['color'] = "red"
-            self.errorMessage.setStyleSheet(Profiles.convertToCSS(defaultCSS))
+            self.errorMessage.setStyleSheet(self.profiles.convertToCSS(defaultCSS))
             self.errorMessage.setText("Please enter a profile name")
             return False 
         # Checking if name is already taken
-        if self.getOriginalUsername() is None and self.getEditedUsername() in Profiles.getUserList():
-            defaultCSS = Profiles.generateDefaultSettings()
+        if self.getOriginalUsername() is None and self.getEditedUsername() in self.profiles.getUserList():
+            defaultCSS = self.profiles.generateDefaultSettings()
             defaultCSS['color'] = "red"
-            self.errorMessage.setStyleSheet(Profiles.convertToCSS(defaultCSS))
+            self.errorMessage.setStyleSheet(self.profiles.convertToCSS(defaultCSS))
             self.errorMessage.setText("Profile name already taken.")
             return False
         return True
@@ -357,7 +360,7 @@ class ProfileSettings(QGridLayout):
 
     def deleteUser(self):
         '''If there is a user to delete it deletes updating the file system accordingly''' 
-        Profiles.deleteUser(self.getOriginalUsername())
+        self.profiles.deleteUser(self.getOriginalUsername())
         self.fillDropDownMenu()
         self.resetUserSettings()
 
@@ -374,7 +377,7 @@ class ProfileSettings(QGridLayout):
 
     def resetUserSettings(self):
         '''Sets the values of the sliders to the current user settings'''
-        self.currentUserSettings = Profiles.getUserSettings(self.getOriginalUsername())
+        self.currentUserSettings = self.profiles.getUserSettings(self.getOriginalUsername())
         
         #Rgba font slider reset
         self.setFontRgbaSliders()
@@ -417,7 +420,7 @@ class ProfileSettings(QGridLayout):
         '''Enables editing of the name of a already made profile'''
         if event.type() == event.MouseButtonDblClick and source is self.DropDownMenu:
             self.DropDownMenu.setEditable(True)
-            self.DropDownMenu.setStyleSheet(Profiles.getStyleSheet())
+            self.DropDownMenu.setStyleSheet(self.getStyleSheet())
         return super().eventFilter(source, event)
 
 
