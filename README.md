@@ -17,6 +17,11 @@ After cloning the repository, you can generate an exacutable by running:
 pyinstaller main.py SettingsWindow.py Profiles.py SubtitleWindow.py --noconsole --collect-all vosk --onefile --icon=Cabbage.ico
 ```
 
+Or to run the package without compiling:
+```bash
+python -m src.main
+```
+
 ## Features
 - [x] Detect audio from microphone and render subtitles
 - [x] Full customisability, including:
