@@ -5,14 +5,24 @@ from PyQt5.QtTest import QTest
 from PyQt5.QtCore import Qt
 from src.SettingsWindow import SettingsWindow
 from src.Profiles import Profiles
+import os
+from pathlib import Path
+import shutil
+pytest.RUNTIME_DIR = Path(__file__).parent / "ProfileSettingsTest"
 
-@pytest.fixture(scope="session")
-def setup_function(scope='session'):
-    Profiles.generateProfilesFile()
+@pytest.fixture(scope="module")
+def profiles():
+    profiles = Profiles(pytest.RUNTIME_DIR)
+    yield profiles 
 
-@pytest.fixture(scope="session")
-def teardown_function(scope='session'):
-    Profiles.emptyDatabase()
+def setup_module():
+    if not os.path.exists(pytest.RUNTIME_DIR):
+        os.mkdir(pytest.RUNTIME_DIR)
+    profiles = Profiles(pytest.RUNTIME_DIR)
+
+def teardown_module():
+    if os.path.isdir(pytest.RUNTIME_DIR):
+        shutil.rmtree(pytest.RUNTIME_DIR)
 
 @pytest.fixture
 def ProfileSettings(qtbot):
@@ -23,7 +33,7 @@ def ProfileSettings(qtbot):
     
 
 @pytest.mark.order(1)
-def test_initLayout(ProfileSettings,setup_function):
+def test_initLayout(ProfileSettings):
     '''Test layout instantiated'''
     assert ProfileSettings is not None
 
@@ -35,12 +45,12 @@ def test_DropDownMenu(ProfileSettings):
     assert ProfileSettings.DropDownMenu.itemText(ProfileSettings.DropDownMenu.count() - 1) == ProfileSettings.NEW_USER_MESSAGE
 
 @pytest.mark.order(3)
-def test_fillDropDownMenu(ProfileSettings):
+def test_fillDropDownMenu(ProfileSettings,profiles):
     '''Test ddmenu filled with correct users'''
     dropDownMenu = ProfileSettings.DropDownMenu
-    currentUser = Profiles.getCurrentUser()
+    currentUser = profiles.getCurrentUser()
     allItems = [dropDownMenu.itemText(i) for i in range(dropDownMenu.count())]
-    profiles = sorted(Profiles.getUserList())
+    profiles = sorted(profiles.getUserList())
     for x in range(len(profiles)):
         assert allItems[x] == profiles[x]
 
@@ -90,9 +100,8 @@ def test_SliderColour(ProfileSettings):
     assert ProfileSettings.currentUserSettings['color']  == 'rgba(255,255,255,1.0)'
 
 @pytest.mark.order(8)
-def test_fontSizeSelectorDictionary(ProfileSettings,teardown_function):
+def test_fontSizeSelectorDictionary(ProfileSettings):
     '''Test slider font size is same as dictionary'''
-    ProfileSettings.__init__()
     ProfileSettings.fontSizeSelector.setText('100')
     ProfileSettings.fontSizeSelectorDictionary()
     assert ProfileSettings.currentUserSettings['font-size'] == '100px'
