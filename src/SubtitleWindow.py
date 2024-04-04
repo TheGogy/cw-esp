@@ -42,14 +42,16 @@ class SubtitleWindow(QMainWindow):
             self.openSettingsMenu()
         self.updateWindowStyling()
         
-    def setSubtitleText(self, text):
+    def setSubtitleText(self, text,windowWidth = None):
         """
         updates subtitles to ensure they do not run of the screen
         needs updating to accomdate multiple lines of text
         """
+        if windowWidth is None:
+            windowWidth = self.width()
         size = QFontMetrics(self.label.font())
         text_split = text.split(" ")
-        while size.width(text) > self.width() and len(text_split) > 1:
+        while size.width(text) > windowWidth and len(text_split) > 1:
             # removes the oldest word until it fits
             text_split = text.split(" ")
             text_split = text_split[1:]

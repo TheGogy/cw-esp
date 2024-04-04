@@ -248,13 +248,5 @@ class Profiles:
         profiles['CurrentModel'] = modelName
         self.saveProfilesFile(profiles)
 
-    def emptyDatabase(self):
-        if os.path.isfile(self.databaseDirectory / "Profiles.yml"):
-            os.remove(self.databaseDirectory / "Profiles.yml")
-        if os.path.isdir(self.databaseDirectory / "Models"):
-            shutil.rmtree(self.databaseDirectory / "Models")
-        if os.path.isdir(self.databaseDirectory / "Users"):
-            shutil.rmtree(self.databaseDirectory / "Users")
-
 if __name__ == '__main__':
     Profiles.generateProfilesFile()
