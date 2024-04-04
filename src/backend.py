@@ -13,17 +13,20 @@ from src.SettingsWindow import SettingsWindow
 
 
 class MicrophoneThread(QThread):
-    def __init__(self):
+    def __init__(self,profiles=None,subtitleWindow=None):
         super().__init__()
-        self.profiles = Profiles()
+        self.profiles = profiles
+        if self.profiles is None:
+            self.profiles = Profiles()
         if self.profiles.getCurrentModelPath() is None:
             settings = SettingsWindow("model",self.profiles)
             settings.exec_()
         if self.profiles.getCurrentModelPath() is None:
             sys.exit()
-        self.window = SubtitleWindow(self.profiles)
-        self.window.show()
-
+        self.window = subtitleWindow
+        if self.window is None:
+            self.window = SubtitleWindow(self.profiles)
+            self.window.show()
     def run(self):
         # get the samplerate - this is needed by the Kaldi recognizer
         device_info = sd.query_devices(sd.default.device[0], "input")

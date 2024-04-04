@@ -215,11 +215,11 @@ class Profiles:
             modelUrl = self.getModelUrls()[modelName][0]
         except KeyError:
             raise ValueError("Model not available.")
-        defaultPath = self.getDefaultPath()
+        defaultPath = self.getDatabaseDirectory()
         filename = defaultPath / "Models" / "temp.zip"
         urlretrieve(modelUrl,filename)
         with ZipFile(filename, "r") as zObject:
-            zObject.extractall("Models")
+            zObject.extractall(defaultPath / "Models")
         os.remove(filename)
         profiles = self.getUserProfiles()
         profiles['CurrentModel'] = modelName
