@@ -3,7 +3,6 @@ import queue
 import sounddevice as sd
 from vosk import Model, KaldiRecognizer
 import sys
-from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread
 import json
 from src.SubtitleWindow import SubtitleWindow
@@ -67,9 +66,3 @@ class MicrophoneThread(QThread):
         except Exception as e:
             print(str(e))
 
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    microphoneThread = MicrophoneThread()
-    microphoneThread.start()
-    sys.exit(app.exec_())
